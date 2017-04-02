@@ -1,11 +1,8 @@
 ﻿using Reactor.Entities;
-using Reactor.Events;
 using Reactor.Groups;
-using Reactor.Pools;
 using Reactor.Systems;
 using Reactor.Unity.Components;
 using UnityEngine;
-using Zenject;
 
 namespace Reactor.Unity.Systems
 {

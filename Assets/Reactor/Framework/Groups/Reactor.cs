@@ -5,6 +5,7 @@ using Reactor.Entities;
 using Reactor.Extensions;
 using Reactor.Systems;
 using Reactor.Systems.Executor;
+using Reactor.Components;
 
 namespace Reactor.Groups
 {
@@ -92,15 +93,16 @@ namespace Reactor.Groups
             _systemExecutor.AddSystemsToEntity(entity, connection);
         }
 
-        public void RemoveComponent(IEntity entity, Type componenType)
+        public void RemoveComponent(IEntity entity, IComponent component)
         {
             ReactorConnection connection;
-            if (!_connections.TryGetValue(componenType, out connection))
+            var componentType = component.GetType();
+            if (!_connections.TryGetValue(componentType, out connection))
             {
                 var set = new HashSet<Type>(TargetTypes);
                 SystemReactor reactor = _systemExecutor.GetSystemReactor(set);
                 connection = new ReactorConnection(this, reactor);
-                this.AddReactorsConnection(componenType, connection, reactor);
+                this.AddReactorsConnection(componentType, connection, reactor);
             }
             entity.Reactor = connection.DownReactor;
             _systemExecutor.RemoveSystemsFromEntity(entity, connection);

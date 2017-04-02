@@ -43,11 +43,16 @@ namespace Reactor.Pools
         }
 
         public IPool GetPool(string name = null)
-        { return _pools[name ?? DefaultPoolName]; }
+        {
+            return _pools[name ?? DefaultPoolName];
+        }
 
         public void RemovePool(string name)
         {
-            if(!_pools.ContainsKey(name)) { return; }
+            if (!_pools.ContainsKey(name))
+            {
+                return;
+            }
 
             var pool = _pools[name];
             _pools.Remove(name);
@@ -57,11 +62,15 @@ namespace Reactor.Pools
         
         public IEnumerable<IEntity> GetEntitiesFor(IGroup group, string poolName = null)
         {
-            if(group is EmptyGroup)
-            { return new IEntity[0]; }
+            if (group is EmptyGroup)
+            {
+                return new IEntity[0];
+            }
 
             if (poolName != null)
-            { return _pools[poolName].Entities.MatchingGroup(group); }
+            {
+                return _pools[poolName].Entities.MatchingGroup(group);
+            }
 
             return Pools.GetAllEntities().MatchingGroup(group);
         }
@@ -69,9 +78,12 @@ namespace Reactor.Pools
         public IGroupAccessor CreateGroupAccessor(IGroup group, string poolName = null)
         {
             var groupAccessorToken = new GroupAccessorToken(group.TargettedComponents.ToArray(), poolName);
-            if (_groupAccessors.ContainsKey(groupAccessorToken)) { return _groupAccessors[groupAccessorToken]; }
+            if (_groupAccessors.ContainsKey(groupAccessorToken))
+            {
+                return _groupAccessors[groupAccessorToken];
+            }
 
-            var entityMatches = GetEntitiesFor(@group, poolName);
+            var entityMatches = GetEntitiesFor(group, poolName);
             var groupAccessor = GroupAccessorFactory.Create(new GroupAccessorConfiguration
             {
                 GroupAccessorToken = groupAccessorToken,
@@ -87,9 +99,10 @@ namespace Reactor.Pools
         {
             _groupAccessors.Values.ForEachRun(x =>
             {
-                if (x is IDisposable)
+                var disposable = x as IDisposable;
+                if (disposable != null)
                 {
-                    (x as IDisposable).Dispose();
+                    disposable.Dispose();
                 }
             });
         }

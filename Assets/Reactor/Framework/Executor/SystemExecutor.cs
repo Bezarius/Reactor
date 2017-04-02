@@ -11,6 +11,31 @@ using UniRx;
 
 namespace Reactor.Systems.Executor
 {
+
+    public sealed class SystemHandlerManager
+    {
+        public IEntityReactionSystemHandler EntityReactionSystemHandler { get; private set; }
+        public IGroupReactionSystemHandler GroupReactionSystemHandler { get; private set; }
+        public ISetupSystemHandler SetupSystemHandler { get; private set; }
+        public IInteractReactionSystemHandler InteractReactionSystemHandler { get; private set; }
+        public IManualSystemHandler ManualSystemHandler { get; private set; }
+
+
+        public SystemHandlerManager(
+                IEntityReactionSystemHandler entityReactionSystemHandler,
+                IGroupReactionSystemHandler groupReactionSystemHandler,
+                ISetupSystemHandler setupSystemHandler,
+                IInteractReactionSystemHandler interactReactionSystemHandler,
+                IManualSystemHandler manualSystemHandler)
+        {
+            EntityReactionSystemHandler = entityReactionSystemHandler;
+            GroupReactionSystemHandler = groupReactionSystemHandler;
+            SetupSystemHandler = setupSystemHandler;
+            InteractReactionSystemHandler = interactReactionSystemHandler;
+            ManualSystemHandler = manualSystemHandler;
+        }
+    }
+
     public sealed class SystemExecutor : ISystemExecutor, IDisposable
     {
         private readonly IList<ISystem> _systems;
@@ -88,7 +113,7 @@ namespace Reactor.Systems.Executor
 
         public void OnEntityComponentRemoved(ComponentRemovedEvent args)
         {
-            args.Entity.Reactor.RemoveComponent(args.Entity, args.Component.GetType());
+            args.Entity.Reactor.RemoveComponent(args.Entity, args.Component);
         }
 
         public void OnEntityAddedToPool(EntityAddedEvent args)
@@ -114,7 +139,8 @@ namespace Reactor.Systems.Executor
             {
                 _entitySubscribtionsOnSystems[system].Values.DisposeAll();
                 _entitySubscribtionsOnSystems.Remove(system);
-            }else if (_nonEntitySubscriptions.ContainsKey(system))
+            }
+            else if (_nonEntitySubscriptions.ContainsKey(system))
             {
                 _nonEntitySubscriptions[system].Disposable.Dispose();
                 _nonEntitySubscriptions.Remove(system);

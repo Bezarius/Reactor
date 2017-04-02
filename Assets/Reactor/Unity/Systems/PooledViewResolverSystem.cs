@@ -33,6 +33,7 @@ namespace Reactor.Unity.Systems
 
             PrefabTemplate = ResolvePrefabTemplate();
 
+            // todo: dispose on system remove
             EventSystem.Receive<EntityRemovedEvent>()
                 .Subscribe(x =>
                 {
@@ -48,8 +49,6 @@ namespace Reactor.Unity.Systems
         protected abstract GameObject ResolvePrefabTemplate();
         protected abstract void RecycleView(GameObject viewToRecycle);
         protected abstract GameObject AllocateView(IEntity entity);
-
-        
 
         public virtual void Setup(IEntity entity)
         {

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Reactor.Entities;
 using Reactor.Events;
-using Reactor.Extensions;
 using Reactor.Pools;
 using Reactor.Unity.Components;
 using Reactor.Unity.MonoBehaviours;
@@ -19,11 +19,31 @@ namespace Reactor.Unity.Systems
         public IEventSystem EventSystem { get; private set; }
         public IInstantiator Instantiator { get; private set; }
 
+        private readonly Dictionary<IEntity, IDisposable> _subscriptionsDictionary = new Dictionary<IEntity, IDisposable>();
+
         protected ViewHandler(IPoolManager poolManager, IEventSystem eventSystem, IInstantiator instantiator)
         {
             PoolManager = poolManager;
             EventSystem = eventSystem;
             Instantiator = instantiator;
+
+            // todo: add clear
+            EventSystem.Receive<ComponentRemovedEvent>()
+                .Where(x => x.Component is ViewComponent)
+                .Subscribe(x =>
+                {
+                    IDisposable viewSubscription;
+                    if (_subscriptionsDictionary.TryGetValue(x.Entity, out viewSubscription))
+                    {
+                        if (viewSubscription != null)
+                        {
+                            viewSubscription.Dispose();
+                        }
+                        var view = (x.Component as ViewComponent).View;
+                        if(view != null)
+                            DestroyView(view);
+                    }
+                });
         }
 
         public virtual GameObject InstantiateAndInject(GameObject prefab,
@@ -56,23 +76,14 @@ namespace Reactor.Unity.Systems
                 entityBinding.Entity = entity;
             }
 
-            IDisposable viewSubscription = null;
             if (viewComponent.DestroyWithView)
             {
-                viewSubscription = viewObject.OnDestroyAsObservable()
+                var viewSubscription = viewObject.OnDestroyAsObservable()
                     .Subscribe(x => entityBinding.Entity.Pool.RemoveEntity(entity))
                     .AddTo(viewObject);
+
+                _subscriptionsDictionary.Add(entity, viewSubscription);
             }
-
-            EventSystem.Receive<ComponentRemovedEvent>()
-                .First(x => x.Component is ViewComponent && x.Entity == entity)
-                .Subscribe(x =>
-                {
-                    if (viewSubscription != null)
-                    { viewSubscription.Dispose(); }
-
-                    DestroyView(viewObject);
-                });
         }
     }
 }
