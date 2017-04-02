@@ -38,8 +38,10 @@ namespace Assets.Reactor.Examples.PooledViews.Blueprints
                 StartingPosition = _startPosition
             });
 
-            entity.AddComponent<ColliderComponent>();
-            entity.AddComponent<ViewComponent>();
+            entity.AddComponent(new ColliderComponent());
+            entity.AddComponent(new ViewComponent());
+            //entity.AddComponent<ColliderComponent>();
+            //entity.AddComponent<ViewComponent>();
         }
     }
 }

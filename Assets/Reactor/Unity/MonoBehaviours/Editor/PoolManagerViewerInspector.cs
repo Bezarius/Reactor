@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using UnityEditor;
-using UnityEngine;
 
 namespace Reactor.Unity.Helpers
 {
@@ -23,12 +22,16 @@ namespace Reactor.Unity.Helpers
 
             foreach (var pool in poolManager.Pools)
             {
-                EditorGUILayout.BeginVertical();
+                
                 EditorGUILayout.LabelField("Pool: " + pool.Name);
                 EditorGUILayout.LabelField("Entities: " + pool.Entities.Count());
-                EditorGUILayout.EndVertical();
-                EditorGUILayout.Space();
+                
             }
+
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.LabelField("Accessors:" + poolManager.PoolAccessors.Count());
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.Space();
         }
     }
 }

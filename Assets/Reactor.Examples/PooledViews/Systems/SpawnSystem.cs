@@ -31,7 +31,7 @@ namespace Assets.Reactor.Examples.PooledViews.Systems
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
             var blueprint = new SelfDestructBlueprint(viewComponent.View.transform.position);
-            _defaultPool.CreateEntity(blueprint); //todo: optimize 68.5%
+            _defaultPool.CreateEntity(blueprint); 
         }
     }
 }

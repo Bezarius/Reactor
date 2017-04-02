@@ -35,6 +35,11 @@ namespace Reactor.Entities
             return component;
         }
 
+        /// <summary>
+        /// I highly recommend using AddComponent(new Component())
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public T AddComponent<T>() where T : class, IComponent, new()
         {
             return (T)AddComponent(new T());

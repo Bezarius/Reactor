@@ -95,6 +95,14 @@ namespace Reactor.Pools
             return _groupAccessors[groupAccessorToken];
         }
 
+        public IEnumerable<IGroupAccessor> PoolAccessors
+        {
+            get
+            {
+                return _groupAccessors.Values;
+            }
+        }
+
         public void Dispose()
         {
             _groupAccessors.Values.ForEachRun(x =>

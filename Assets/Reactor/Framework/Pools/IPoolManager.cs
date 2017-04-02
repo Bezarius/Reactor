@@ -10,6 +10,7 @@ namespace Reactor.Pools
 
         IEnumerable<IEntity> GetEntitiesFor(IGroup group, string poolName = null);
         IGroupAccessor CreateGroupAccessor(IGroup group, string poolName = null);
+        IEnumerable<IGroupAccessor> PoolAccessors { get; }
 
         IPool CreatePool(string name);
         IPool GetPool(string name = null);
