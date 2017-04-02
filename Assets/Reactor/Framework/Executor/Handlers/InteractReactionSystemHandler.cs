@@ -18,8 +18,8 @@ namespace Reactor.Systems.Executor.Handlers
 
         public IEnumerable<SubscriptionToken> Setup(IInteractReactionSystem system)
         {
-            var groupAccessor = PoolManager.CreateGroupAccessor(system.TargetGroup);
-            return groupAccessor.Entities.ForEachRun(x => ProcessEntity(system, x));
+            var entities = PoolManager.GetEntitiesFor(system.TargetGroup);
+            return entities.ForEachRun(x => ProcessEntity(system, x));
         }
 
         public SubscriptionToken ProcessEntity(IInteractReactionSystem system, IEntity entity)

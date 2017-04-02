@@ -51,7 +51,7 @@ namespace Reactor.Groups
 
         public void OnEntityComponentRemoved(ComponentRemovedEvent args)
         {
-            if (!args.Entity.HasComponents(AccessorToken.ComponentTypes))
+            if (CachedEntities.Contains(args.Entity) && !args.Entity.HasComponents(AccessorToken.ComponentTypes))
             {
                 CachedEntities.Remove(args.Entity);
             }
@@ -59,7 +59,7 @@ namespace Reactor.Groups
 
         public void OnEntityComponentAdded(ComponentAddedEvent args)
         {
-            if (args.Entity.HasComponents(AccessorToken.ComponentTypes) && !CachedEntities.Contains(args.Entity))
+            if (!CachedEntities.Contains(args.Entity) && args.Entity.HasComponents(AccessorToken.ComponentTypes))
             {
                 CachedEntities.Add(args.Entity);
             }

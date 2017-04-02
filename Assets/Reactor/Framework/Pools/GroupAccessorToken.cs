@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Reactor.Groups;
 
 namespace Reactor.Pools
 {
