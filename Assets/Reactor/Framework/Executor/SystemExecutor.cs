@@ -175,6 +175,8 @@ namespace Reactor.Systems.Executor
             }
         }
 
+        
+        //todo: добавить оптимизацию для сущностей которые создаются с помощью блюпринтов. Даст прирост ~5%
         public SystemReactor GetSystemReactor(HashSet<Type> targetTypes)
         {
             if (targetTypes.Count > 0)

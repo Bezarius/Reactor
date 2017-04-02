@@ -24,21 +24,18 @@ namespace Reactor.Systems.Executor.Handlers
 
         public SubscriptionToken ProcessEntity(IEntityReactionSystem system, IEntity entity)
         {
-            var hasEntityPredicate = system.TargetGroup is IHasPredicate;
+            var predicate = system.TargetGroup as IHasPredicate;
             var subscription = system.Impact(entity)
                 .Subscribe(x =>
                 {
-                    if (hasEntityPredicate)
+                    if (predicate != null && predicate.CanProcessEntity(x))
                     {
-                        var groupPredicate = system.TargetGroup as IHasPredicate;
-                        if (groupPredicate.CanProcessEntity(x))
-                        {
-                            system.Reaction(x);
-                        }
-                        return;
+                        system.Reaction(x);
                     }
-
-                    system.Reaction(x);
+                    else
+                    {
+                        system.Reaction(x);
+                    }
                 });
 
             return new SubscriptionToken(entity, subscription);
