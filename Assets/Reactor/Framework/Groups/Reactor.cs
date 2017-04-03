@@ -39,7 +39,7 @@ namespace Reactor.Groups
         {
             UpReactor = upReactor;
             DownReactor = downReactor;
-            GroupAccessors = new IGroupAccessor[0];
+            GroupAccessors = upReactor.GroupAccessors.Except(downReactor.GroupAccessors).ToArray();
             SetupSystems = upReactor.SetupSystems.Except(downReactor.SetupSystems).ToArray();
             EntityReactionSystems = upReactor.EntityReactionSystems.Except(downReactor.EntityReactionSystems).ToArray();
             GroupReactionSystems = upReactor.GroupReactionSystems.Except(downReactor.GroupReactionSystems).ToArray();
@@ -76,7 +76,7 @@ namespace Reactor.Groups
             TargetTypes = targetTypes;
 
             var systems = _systemExecutor.Systems.Where(x => x.TargetGroup.TargettedComponents.All(targetTypes.Contains)).ToList();
-            GroupAccessors = new IGroupAccessor[0];
+            GroupAccessors = _systemExecutor.PoolManager.PoolAccessors.Where(x=>new HashSet<Type>(x.AccessorToken.ComponentTypes).IsSubsetOf(targetTypes)).ToArray();
             SetupSystems = systems.OfType<ISetupSystem>().OrderByPriority().ToArray();
             EntityReactionSystems = systems.OfType<IEntityReactionSystem>().OrderByPriority().ToArray();
             GroupReactionSystems = systems.OfType<IGroupReactionSystem>().OrderByPriority().ToArray();
