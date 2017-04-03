@@ -8,5 +8,7 @@ namespace Reactor.Groups
     {
         GroupAccessorToken AccessorToken { get; }
         IEnumerable<IEntity> Entities { get; }
+        void RemoveEntity(IEntity entity);
+        void AddEntity(IEntity entity);
     }
 }

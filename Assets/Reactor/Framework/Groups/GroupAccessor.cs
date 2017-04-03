@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Reactor.Entities;
 using Reactor.Pools;
@@ -13,6 +14,16 @@ namespace Reactor.Groups
         {
             AccessorToken = accessorToken;
             Entities = entities;
+        }
+
+        public void RemoveEntity(IEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddEntity(IEntity entity)
+        {
+            throw new NotImplementedException();
         }
     }
 }

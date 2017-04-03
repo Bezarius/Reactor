@@ -22,13 +22,25 @@ namespace Reactor.Groups
         {
             AccessorToken = accessorToken;
             EventSystem = eventSystem;
-
             CachedEntities = new HashSet<IEntity>(initialEntities);
-            Subscriptions = new List<IDisposable>();
         }
+
+        public void RemoveEntity(IEntity entity)
+        {
+            CachedEntities.Remove(entity);
+        }
+
+        public void AddEntity(IEntity entity)
+        {
+            CachedEntities.Add(entity);
+        }
+
 
         public void MonitorEntityChanges()
         {
+            /*
+            Subscriptions = new List<IDisposable>();
+
             var addEntitySubscription = EventSystem.Receive<EntityAddedEvent>()
                 .Subscribe(OnEntityAddedToPool);
 
@@ -46,7 +58,7 @@ namespace Reactor.Groups
             Subscriptions.Add(addEntitySubscription);
             Subscriptions.Add(removeEntitySubscription);
             Subscriptions.Add(addComponentSubscription);
-            Subscriptions.Add(removeComponentEntitySubscription);
+            Subscriptions.Add(removeComponentEntitySubscription);*/
         }
 
         public void OnEntityComponentRemoved(ComponentRemovedEvent args)
@@ -82,7 +94,8 @@ namespace Reactor.Groups
 
         public void Dispose()
         {
-            Subscriptions.DisposeAll();
+            if (Subscriptions != null)
+                Subscriptions.DisposeAll();
         }
     }
 }

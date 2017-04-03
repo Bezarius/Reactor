@@ -60,6 +60,7 @@ namespace Reactor.Systems.Executor
         public IInteractReactionSystemHandler InteractReactionSystemHandler { get; private set; }
         public IManualSystemHandler ManualSystemHandler { get; private set; }
 
+
         public SystemExecutor(
             IPoolManager poolManager,
             IEventSystem eventSystem,
@@ -81,6 +82,7 @@ namespace Reactor.Systems.Executor
             var removeEntitySubscription = EventSystem.Receive<EntityRemovedEvent>().Subscribe(OnEntityRemovedFromPool);
             var addComponentSubscription = EventSystem.Receive<ComponentAddedEvent>().Subscribe(OnEntityComponentAdded);
             var removeComponentSubscription = EventSystem.Receive<ComponentRemovedEvent>().Subscribe(OnEntityComponentRemoved);
+            var groupAccessorAddedEventSubscription = EventSystem.Receive<GroupAccessorAddedEvent>().Subscribe(OnGroupAccessorAdded); 
 
             _systems = new List<ISystem>();
             _entitySubscribtionsOnSystems = new Dictionary<ISystem, Dictionary<IEntity, SubscriptionToken>>();
@@ -90,7 +92,8 @@ namespace Reactor.Systems.Executor
                 addEntitySubscription,
                 removeEntitySubscription,
                 addComponentSubscription,
-                removeComponentSubscription
+                removeComponentSubscription,
+                groupAccessorAddedEventSubscription
             };
         }
 
@@ -122,6 +125,18 @@ namespace Reactor.Systems.Executor
 
         public void OnEntityRemovedFromPool(EntityRemovedEvent args)
         {
+        }
+
+        public void OnGroupAccessorAdded(GroupAccessorAddedEvent args)
+        {
+            // выбрать все реакторы, которые содержат все элементы GroupAccessor'a
+            // выбрать все переходы, которые влияют на GroupAccessor и добавить учет группы
+            var hashSet = new HashSet<Type>(args.GroupAccessorToken.ComponentTypes);
+            var reactors = _systemReactors.Where(x => x.TargetTypes.IsSupersetOf(hashSet));
+            foreach (var systemReactor in reactors)
+            {
+                systemReactor.AddGroupAccessor(args.GroupAccessor);
+            }
         }
 
 
@@ -175,6 +190,7 @@ namespace Reactor.Systems.Executor
             }
         }
 
+
         
         //todo: добавить оптимизацию для сущностей которые создаются с помощью блюпринтов. Даст прирост ~7%
         public SystemReactor GetSystemReactor(HashSet<Type> targetTypes)
@@ -188,6 +204,7 @@ namespace Reactor.Systems.Executor
                 if (reactor == null)
                 {
                     reactor = new SystemReactor(this, targetTypes);
+                    // todo: find all subset groups
                     _systemReactors.Add(reactor);
                 }
 
@@ -227,6 +244,12 @@ namespace Reactor.Systems.Executor
                     _entitySubscribtionsOnSystems[system].Add(entity, subscription);
                 }
             }
+
+            for (int i = 0; i < container.GroupAccessors.Length; i++)
+            {
+                var accessor = container.GroupAccessors[i];
+                accessor.AddEntity(entity);
+            }
         }
 
         private void RemoveEntitySubscriptionFromSystem(IEntity entity, ISystem system)
@@ -255,6 +278,12 @@ namespace Reactor.Systems.Executor
             for (int i = 0; i < container.InteractReactionSystems.Length; i++)
             {
                 RemoveEntitySubscriptionFromSystem(entity, container.InteractReactionSystems[i]);
+            }
+
+            for (int i = 0; i < container.GroupAccessors.Length; i++)
+            {
+                var accessor = container.GroupAccessors[i];
+                accessor.RemoveEntity(entity);
             }
         }
 

@@ -92,6 +92,8 @@ namespace Reactor.Pools
             
             _groupAccessors.Add(groupAccessorToken, groupAccessor);
 
+            EventSystem.Publish(new GroupAccessorAddedEvent(groupAccessorToken, groupAccessor));
+
             return _groupAccessors[groupAccessorToken];
         }
 
