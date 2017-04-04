@@ -17,6 +17,7 @@ namespace Reactor.Unity.Installers
             Container.Bind<IMessageBroker>().To<MessageBroker>().AsSingle();
             Container.Bind<IEventSystem>().To<EventSystem>().AsSingle();
 
+            Container.Bind<IEntityIndexPool>().To<EntityIndexPool>().AsSingle();
             Container.Bind<IEntityFactory>().To<DefaultEntityFactory>().AsSingle();
             Container.Bind<IPoolFactory>().To<DefaultPoolFactory>().AsSingle();
             Container.Bind<IGroupAccessorFactory>().To<DefaultGroupAccessorFactory>().AsSingle();

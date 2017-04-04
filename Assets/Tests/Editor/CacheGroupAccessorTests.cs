@@ -49,14 +49,15 @@ namespace Reactor.Tests
         public void should_only_cache_applicable_entity_when_applicable_entity_added()
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var accessorToken = new GroupAccessorToken(new[] { typeof(TestComponentOne), typeof(TestComponentTwo) }, "default");
             var mockPool = Substitute.For<IPool>();
             
-            var applicableEntity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var applicableEntity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             applicableEntity.AddComponent<TestComponentOne>();
             applicableEntity.AddComponent<TestComponentTwo>();
 
-            var unapplicableEntity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var unapplicableEntity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             unapplicableEntity.AddComponent<TestComponentOne>();
 
             var underlyingEvent = new ReactiveProperty<EntityAddedEvent>(new EntityAddedEvent(applicableEntity, mockPool));
@@ -75,18 +76,19 @@ namespace Reactor.Tests
         public void should_only_remove_applicable_entity_when_entity_removed()
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var accessorToken = new GroupAccessorToken(new[] { typeof(TestComponentOne), typeof(TestComponentTwo) }, "default");
             var mockPool = Substitute.For<IPool>();
 
-            var existingEntityOne = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var existingEntityOne = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             existingEntityOne.AddComponent<TestComponentOne>();
             existingEntityOne.AddComponent<TestComponentTwo>();
 
-            var existingEntityTwo = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var existingEntityTwo = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             existingEntityTwo.AddComponent<TestComponentOne>();
             existingEntityTwo.AddComponent<TestComponentTwo>();
 
-            var unapplicableEntity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var unapplicableEntity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             unapplicableEntity.AddComponent<TestComponentOne>();
 
             var underlyingEvent = new ReactiveProperty<EntityRemovedEvent>(new EntityRemovedEvent(unapplicableEntity, mockPool));
@@ -105,21 +107,22 @@ namespace Reactor.Tests
         public void should_only_remove_entity_when_components_no_longer_match_group()
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var accessorToken = new GroupAccessorToken(new[] { typeof(TestComponentOne), typeof(TestComponentTwo) }, "default");
             var mockPool = Substitute.For<IPool>();
 
-            var existingEntityOne = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var existingEntityOne = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var componentToRemove = new TestComponentOne();
             existingEntityOne.AddComponent(componentToRemove);
             existingEntityOne.AddComponent<TestComponentTwo>();
 
-            var existingEntityTwo = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var existingEntityTwo = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var unapplicableComponent = new TestComponentThree();
             existingEntityTwo.AddComponent<TestComponentOne>();
             existingEntityTwo.AddComponent<TestComponentTwo>();
             existingEntityTwo.AddComponent(unapplicableComponent);
 
-            var dummyEventToSeedMock = new ComponentRemovedEvent(new Entity(Guid.NewGuid(), mockPool, mockEventSystem), new TestComponentOne());
+            var dummyEventToSeedMock = new ComponentRemovedEvent(new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem), new TestComponentOne());
             var underlyingEvent = new ReactiveProperty<ComponentRemovedEvent>(dummyEventToSeedMock);
             mockEventSystem.Receive<ComponentRemovedEvent>().Returns(underlyingEvent);
 
@@ -140,18 +143,19 @@ namespace Reactor.Tests
         public void should_only_add_entity_when_components_match_group()
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var accessorToken = new GroupAccessorToken(new[] { typeof(TestComponentOne), typeof(TestComponentTwo) }, "default");
             var mockPool = Substitute.For<IPool>();
 
-            var existingEntityOne = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var existingEntityOne = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var componentToAdd = new TestComponentOne();
             existingEntityOne.AddComponent<TestComponentTwo>();
 
-            var existingEntityTwo = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var existingEntityTwo = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var unapplicableComponent = new TestComponentThree();
             existingEntityTwo.AddComponent<TestComponentOne>();
 
-            var dummyEventToSeedMock = new ComponentAddedEvent(new Entity(Guid.NewGuid(), mockPool, mockEventSystem), new TestComponentOne());
+            var dummyEventToSeedMock = new ComponentAddedEvent(new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem), new TestComponentOne());
             var underlyingEvent = new ReactiveProperty<ComponentAddedEvent>(dummyEventToSeedMock);
             mockEventSystem.Receive<ComponentAddedEvent>().Returns(underlyingEvent);
 

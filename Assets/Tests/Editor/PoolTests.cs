@@ -14,13 +14,14 @@ namespace Reactor.Tests
         [Test]
         public void should_create_new_entity()
         {
-            var expectedId = Guid.NewGuid();
             var mockEntityFactory = Substitute.For<IEntityFactory>();
             var mockEventSystem = Substitute.For<IEventSystem>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var expectedId = mockEntityIndexPool.GetId();
             var mockPool = Substitute.For<IPool>();
-            mockEntityFactory.Create(mockPool,null).Returns(new Entity(expectedId, mockPool, mockEventSystem));
+            mockEntityFactory.Create(mockPool, expectedId).Returns(new Entity(expectedId, mockPool, mockEventSystem));
        
-            var pool = new Pool("", mockEntityFactory, mockEventSystem);
+            var pool = new Pool("", mockEntityFactory, mockEntityIndexPool, mockEventSystem);
             var entity = pool.CreateEntity();
 
             Assert.That(entity.Id, Is.EqualTo(expectedId));
@@ -33,10 +34,12 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockEntityFactory = Substitute.For<IEntityFactory>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var mockPool = Substitute.For<IPool>();
-            mockEntityFactory.Create(mockPool, null).Returns(new Entity(Guid.NewGuid(), mockPool, mockEventSystem));
+            var idx = mockEntityIndexPool.GetId();
+            mockEntityFactory.Create(mockPool, idx).Returns(new Entity(idx, mockPool, mockEventSystem));
 
-            var pool = new Pool("", mockEntityFactory, mockEventSystem);
+            var pool = new Pool("", mockEntityFactory, mockEntityIndexPool, mockEventSystem);
             var entity = pool.CreateEntity();
 
             mockEventSystem.Received().Publish(Arg.Is<EntityAddedEvent>(x => x.Entity == entity && x.Pool == pool));
@@ -47,10 +50,12 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockEntityFactory = Substitute.For<IEntityFactory>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var mockPool = Substitute.For<IPool>();
-            mockEntityFactory.Create(mockPool, null).Returns(new Entity(Guid.NewGuid(), mockPool, mockEventSystem));
+            var idx = mockEntityIndexPool.GetId();
+            mockEntityFactory.Create(mockPool, idx).Returns(new Entity(idx, mockPool, mockEventSystem));
 
-            var pool = new Pool("", mockEntityFactory, mockEventSystem);
+            var pool = new Pool("", mockEntityFactory, mockEntityIndexPool, mockEventSystem);
             var entity = pool.CreateEntity();
 
             Assert.That(pool.Entities.Count(), Is.EqualTo(1));
@@ -62,10 +67,12 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockEntityFactory = Substitute.For<IEntityFactory>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var mockPool = Substitute.For<IPool>();
-            mockEntityFactory.Create(mockPool, null).Returns(new Entity(Guid.NewGuid(), mockPool, mockEventSystem));
+            var idx = mockEntityIndexPool.GetId();
+            mockEntityFactory.Create(mockPool, idx).Returns(new Entity(idx, mockPool, mockEventSystem));
 
-            var pool = new Pool("", mockEntityFactory, mockEventSystem);
+            var pool = new Pool("", mockEntityFactory, mockEntityIndexPool, mockEventSystem);
             var entity = pool.CreateEntity();
             pool.RemoveEntity(entity);
             
@@ -79,10 +86,12 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockEntityFactory = Substitute.For<IEntityFactory>();
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
             var mockPool = Substitute.For<IPool>();
-            mockEntityFactory.Create(mockPool, null).Returns(new Entity(Guid.NewGuid(), mockPool, mockEventSystem));
+            var idx = mockEntityIndexPool.GetId();
+            mockEntityFactory.Create(mockPool, idx).Returns(new Entity(idx, mockPool, mockEventSystem));
 
-            var pool = new Pool("", mockEntityFactory, mockEventSystem);
+            var pool = new Pool("", mockEntityFactory, mockEntityIndexPool, mockEventSystem);
             var entity = pool.CreateEntity();
             pool.RemoveEntity(entity);
 

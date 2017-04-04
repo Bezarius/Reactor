@@ -7,8 +7,8 @@ namespace Reactor.Entities
 {
     public interface IEntity : IDisposable
     {
-        Guid Id { get; }
-        Groups.SystemReactor Reactor { get; set; }
+        int Id { get; }
+        //Groups.SystemReactor Reactor { get; set; }
         IPool Pool { get; }
         IEnumerable<IComponent> Components { get; }
 

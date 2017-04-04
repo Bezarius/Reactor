@@ -19,8 +19,10 @@ namespace Reactor.Tests
         public void should_correctly_add_component()
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
+
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var dummyComponent = Substitute.For<IComponent>();
 
             entity.AddComponent(dummyComponent);
@@ -33,7 +35,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var dummyComponent = Substitute.For<IComponent>();
 
             entity.AddComponent(dummyComponent);
@@ -46,7 +49,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var dummyComponent = Substitute.For<IComponent>();
             entity.AddComponent(dummyComponent);
             
@@ -60,7 +64,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var dummyComponent = Substitute.For<IComponent>();
             entity.AddComponent(dummyComponent);
             entity.RemoveComponent(dummyComponent);
@@ -73,7 +78,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var dummyComponent = new TestComponentOne();
             entity.AddComponent(dummyComponent);
 
@@ -85,7 +91,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             entity.AddComponent(new TestComponentOne());
             entity.AddComponent(new TestComponentTwo());
 
@@ -97,7 +104,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             entity.AddComponent(new TestComponentOne());
 
             Assert.IsFalse(entity.HasComponents(typeof(TestComponentOne), typeof(TestComponentTwo)));
@@ -108,7 +116,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
 
             Assert.IsFalse(entity.HasComponent<TestComponentOne>());
         }
@@ -118,7 +127,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var dummyComponent = Substitute.For<IComponent>();
             entity.AddComponent(dummyComponent);
 
@@ -130,7 +140,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             entity.RemoveComponent<TestComponentOne>();
         }
 
@@ -139,7 +150,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var dummyComponent = new TestComponentOne();
 
             entity.RemoveComponent(dummyComponent);
@@ -150,8 +162,8 @@ namespace Reactor.Tests
         {
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockPool = Substitute.For<IPool>();
-
-            var entity = new Entity(Guid.NewGuid(), mockPool, mockEventSystem);
+            var mockEntityIndexPool = Substitute.For<IEntityIndexPool>();
+            var entity = new Entity(mockEntityIndexPool.GetId(), mockPool, mockEventSystem);
             var testComponentOne = entity.AddComponent<TestComponentOne>();
             var testComponentTwo = entity.AddComponent<TestComponentTwo>();
             var testComponentThree = entity.AddComponent<TestComponentThree>();

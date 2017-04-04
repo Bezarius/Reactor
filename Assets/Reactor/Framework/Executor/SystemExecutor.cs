@@ -43,6 +43,7 @@ namespace Reactor.Systems.Executor
         private readonly Dictionary<ISystem, Dictionary<IEntity, SubscriptionToken>> _entitySubscribtionsOnSystems;
         private readonly Dictionary<ISystem, SubscriptionToken> _nonEntitySubscriptions;
         private readonly List<SystemReactor> _systemReactors = new List<SystemReactor>();
+        private SystemReactor[] _entityToReactorIndex = new SystemReactor[0];
 
         private SystemReactor _emptyReactor;
         private SystemReactor EmptyReactor
@@ -102,21 +103,33 @@ namespace Reactor.Systems.Executor
         {
             var entity = args.Entity;
             var type = args.Component.GetType();
-            if (entity.Reactor != null)
+
+            if (entity.Id < _entityToReactorIndex.Length)
             {
-                args.Entity.Reactor.AddComponent(entity, type);
+                var reactor = _entityToReactorIndex[entity.Id];
+                if (reactor != null)
+                {
+                    reactor.AddComponent(entity, type);
+                }
+                else
+                {
+                    reactor = this.GetSystemReactor(new HashSet<Type> { type });
+                    _entityToReactorIndex[entity.Id] = reactor;
+                    AddSystemsToEntity(entity, reactor);
+                }
             }
             else
             {
+                Array.Resize(ref _entityToReactorIndex, entity.Id + 1);
                 var reactor = this.GetSystemReactor(new HashSet<Type> { type });
-                entity.Reactor = reactor;
+                _entityToReactorIndex[entity.Id] = reactor;
                 AddSystemsToEntity(entity, reactor);
             }
         }
 
         public void OnEntityComponentRemoved(ComponentRemovedEvent args)
         {
-            args.Entity.Reactor.RemoveComponent(args.Entity, args.Component);
+            _entityToReactorIndex[args.Entity.Id].RemoveComponent(args.Entity, args.Component);
         }
 
         public void OnEntityAddedToPool(EntityAddedEvent args)
@@ -125,12 +138,11 @@ namespace Reactor.Systems.Executor
 
         public void OnEntityRemovedFromPool(EntityRemovedEvent args)
         {
+            _entityToReactorIndex[args.Entity.Id] = null;
         }
 
         public void OnGroupAccessorAdded(GroupAccessorAddedEvent args)
         {
-            // выбрать все реакторы, которые содержат все элементы GroupAccessor'a
-            // выбрать все переходы, которые влияют на GroupAccessor и добавить учет группы
             var hashSet = new HashSet<Type>(args.GroupAccessorToken.ComponentTypes);
             var reactors = _systemReactors.Where(x => x.TargetTypes.IsSupersetOf(hashSet));
             foreach (var systemReactor in reactors)

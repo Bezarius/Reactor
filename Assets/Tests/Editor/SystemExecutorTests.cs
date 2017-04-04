@@ -93,6 +93,7 @@ namespace Reactor.Tests
             var mockEventSystem = Substitute.For<IEventSystem>();
             var mockSetupSystemHandler = Substitute.For<ISetupSystemHandler>();
             var fakeSystem = Substitute.For<ISetupSystem>();
+            var entityIndexPool = Substitute.For<IEntityIndexPool>();
             fakeSystem.TargetGroup.Returns(dummyGroup);
 
             var systemExecutor = new SystemExecutor(mockPoolManager, mockEventSystem,
@@ -100,7 +101,7 @@ namespace Reactor.Tests
 
             systemExecutor.AddSystem(fakeSystem);
 
-            var entity = new Entity(Guid.NewGuid(), pool, mockEventSystem);
+            var entity = new Entity(entityIndexPool.GetId(), pool, mockEventSystem);
             entity.AddComponent(new TestComponentOne());
             systemExecutor.OnEntityComponentAdded(new ComponentAddedEvent(entity, new TestComponentOne()));
             
@@ -121,6 +122,7 @@ namespace Reactor.Tests
             var pool = mockPoolManager.GetPool();
             var mockEventSystem = Substitute.For<IEventSystem>();
             var fakeSystem = Substitute.For<ITeardownSystem>();
+            var entityIndexPool = Substitute.For<IEntityIndexPool>();
             fakeSystem.TargetGroup.Returns(dummyGroup);
 
             var systemExecutor = new SystemExecutor(mockPoolManager, mockEventSystem,
@@ -128,7 +130,7 @@ namespace Reactor.Tests
 
             systemExecutor.AddSystem(fakeSystem);
 
-            var entity = new Entity(Guid.NewGuid(), pool, mockEventSystem);
+            var entity = new Entity(entityIndexPool.GetId(), pool, mockEventSystem);
             entity.AddComponent(new TestComponentOne());
             entity.AddComponent(new TestComponentTwo());
             

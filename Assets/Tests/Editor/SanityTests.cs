@@ -17,8 +17,9 @@ namespace Reactor.Tests
         private SystemExecutor CreateExecutor()
         {
             var messageBroker = new EventSystem(new MessageBroker());
+            var entityIndexPool = new EntityIndexPool();
             var entityFactory = new DefaultEntityFactory(messageBroker);
-            var poolFactory = new DefaultPoolFactory(entityFactory, messageBroker);
+            var poolFactory = new DefaultPoolFactory(entityFactory, messageBroker, entityIndexPool);
             var groupAccessorFactory = new DefaultGroupAccessorFactory(messageBroker);
             var poolManager = new PoolManager(messageBroker, poolFactory, groupAccessorFactory);
             var reactsToEntityHandler = new EntityReactionSystemHandler(poolManager);

@@ -7,6 +7,7 @@ namespace Reactor.Pools
 {
     public class Pool : IPool
     {
+        private readonly IEntityIndexPool _indexPool;
         private readonly HashSet<IEntity> _entities;
 
         public string Name { get; private set; }
@@ -14,8 +15,9 @@ namespace Reactor.Pools
         public IEventSystem EventSystem { get; private set; }
         public IEntityFactory EntityFactory { get; private set; }
 
-        public Pool(string name, IEntityFactory entityFactory, IEventSystem eventSystem)
+        public Pool(string name, IEntityFactory entityFactory, IEntityIndexPool indexPool, IEventSystem eventSystem)
         {
+            _indexPool = indexPool;
             _entities = new HashSet<IEntity>();
             Name = name;
             EventSystem = eventSystem;
@@ -24,7 +26,7 @@ namespace Reactor.Pools
 
         public IEntity CreateEntity(IBlueprint blueprint = null)
         {
-            var entity = EntityFactory.Create(this, null);
+            var entity = EntityFactory.Create(this, _indexPool.GetId());
 
             _entities.Add(entity);
 
@@ -41,7 +43,7 @@ namespace Reactor.Pools
         public void RemoveEntity(IEntity entity)
         {
             _entities.Remove(entity);
-
+            _indexPool.Release(entity.Id);
             entity.Dispose();
 
             EventSystem.Publish(new EntityRemovedEvent(entity, this));

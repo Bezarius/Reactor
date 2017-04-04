@@ -103,7 +103,7 @@ namespace Reactor.Groups
                 connection = new ReactorConnection(reactor, this);
                 this.AddReactorsConnection(componenType, connection, reactor);
             }
-            entity.Reactor = connection.UpReactor;
+            //entity.Reactor = connection.UpReactor;
             _systemExecutor.AddSystemsToEntity(entity, connection);
         }
 
@@ -118,7 +118,7 @@ namespace Reactor.Groups
                 connection = new ReactorConnection(this, reactor);
                 this.AddReactorsConnection(componentType, connection, reactor);
             }
-            entity.Reactor = connection.DownReactor;
+            //entity.Reactor = connection.DownReactor;
             _systemExecutor.RemoveSystemsFromEntity(entity, connection);
         }
 

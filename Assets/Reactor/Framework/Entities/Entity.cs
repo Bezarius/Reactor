@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Reactor.Components;
 using Reactor.Events;
-using Reactor.Groups;
 using Reactor.Pools;
 
 namespace Reactor.Entities
@@ -14,13 +13,12 @@ namespace Reactor.Entities
 
         public IEventSystem EventSystem { get; private set; }
 
-        public Guid Id { get; private set; }
-        public SystemReactor Reactor { get; set; }
+        public int Id { get; private set; }
         public IPool Pool { get; private set; }
         public IEnumerable<IComponent> Components { get { return _components.Values; } }
 
 
-        public Entity(Guid id, IPool pool, IEventSystem eventSystem)
+        public Entity(int id, IPool pool, IEventSystem eventSystem)
         {
             Id = id;
             Pool = pool;

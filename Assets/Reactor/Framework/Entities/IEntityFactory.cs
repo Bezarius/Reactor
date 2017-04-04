@@ -1,9 +1,6 @@
-﻿using System;
-using Reactor.Factories;
-using Reactor.Pools;
-using Zenject;
+﻿using Reactor.Pools;
 
 namespace Reactor.Entities
 {
-    public interface IEntityFactory : IFactory<IPool, Guid?, IEntity> {}
+    public interface IEntityFactory : Zenject.IFactory<IPool, int, IEntity> {}
 }
