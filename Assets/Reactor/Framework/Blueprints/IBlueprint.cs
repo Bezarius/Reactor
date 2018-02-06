@@ -1,9 +1,10 @@
-﻿using Reactor.Entities;
+﻿using System.Collections.Generic;
+using Reactor.Components;
 
 namespace Reactor.Blueprints
 {
     public interface IBlueprint
     {
-        void Apply(IEntity entity);
+        IEnumerable<IComponent> Build();
     }
 }

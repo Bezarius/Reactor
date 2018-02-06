@@ -13,19 +13,22 @@ namespace Reactor.Unity
 {
     public abstract class ReactorApplication : MonoBehaviour
     {
-        [Inject]
         public ISystemExecutor SystemExecutor { get; private set; }
 
         [Inject]
         public IPoolManager PoolManager { get; private set; }
 
         protected List<IReactorPlugin> Plugins { get; private set; }
+
         protected DiContainer Container { get; private set; }
 
         [Inject]
-        private void Init(DiContainer container)
+        private void Init(DiContainer container, ISystemExecutor systemExecutor, ICoreManager coreManager, IPoolManager poolManager)
         {
             Plugins = new List<IReactorPlugin>();
+            SystemExecutor = systemExecutor;
+            PoolManager = poolManager;
+            //CoreManager = coreManager;
             Container = container;
             ApplicationStarting();
             RegisterAllPluginDependencies();
@@ -54,6 +57,7 @@ namespace Reactor.Unity
         
         protected virtual void RegisterAllBoundSystems()
         {
+            Debug.Log("RegisterAllBoundSystems");
             var allSystems = Container.ResolveAll<ISystem>();
 
             var orderedSystems = allSystems

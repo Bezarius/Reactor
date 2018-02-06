@@ -5,6 +5,7 @@ using Reactor.Entities;
 using Reactor.Events;
 using Reactor.Extensions;
 using Reactor.Groups;
+using UnityEngine;
 
 namespace Reactor.Pools
 {
@@ -44,7 +45,7 @@ namespace Reactor.Pools
 
         public IPool GetPool(string name = null)
         {
-            return _pools[name ?? DefaultPoolName];
+            return string.IsNullOrEmpty(name) ? _pools[DefaultPoolName] : _pools[name];
         }
 
         public void RemovePool(string name)
@@ -89,7 +90,11 @@ namespace Reactor.Pools
                 GroupAccessorToken = groupAccessorToken,
                 InitialEntities = entityMatches
             });
-            
+
+            if (groupAccessorToken.ComponentTypes.Length == 0)
+            {
+                Debug.Log("упс!");
+            }
             _groupAccessors.Add(groupAccessorToken, groupAccessor);
 
             EventSystem.Publish(new GroupAccessorAddedEvent(groupAccessorToken, groupAccessor));

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Reactor.Blueprints;
 using Reactor.Entities;
 using Reactor.Groups;
 using UniRx;
@@ -26,12 +25,6 @@ namespace Reactor.Extensions
         public static bool MatchesGroup(this IEntity entity, IGroup group)
         {
             return entity.HasComponents(group.TargettedComponents.ToArray());
-        }
-
-        public static IEntity ApplyBlueprint(this IEntity entity, IBlueprint blueprint)
-        {
-            blueprint.Apply(entity);
-            return entity;
         }
     }
 }

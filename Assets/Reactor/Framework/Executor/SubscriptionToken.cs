@@ -1,15 +1,16 @@
 ﻿using System;
+using Reactor.Entities;
 
 namespace Reactor.Systems.Executor
 {
     public class SubscriptionToken
     {
-        public object AssociatedObject { get; private set; }
+        public IEntity AssociatedEntity { get; private set; }
         public IDisposable Disposable { get; private set; }
 
-        public SubscriptionToken(object associatedObject, IDisposable disposable)
+        public SubscriptionToken(IEntity associatedEntity, IDisposable disposable)
         {
-            AssociatedObject = associatedObject;
+            AssociatedEntity = associatedEntity;
             Disposable = disposable;
         }
     }

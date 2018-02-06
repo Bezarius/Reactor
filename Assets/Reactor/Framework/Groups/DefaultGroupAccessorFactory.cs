@@ -13,8 +13,7 @@ namespace Reactor.Groups
 
         public IGroupAccessor Create(GroupAccessorConfiguration arg)
         {
-            var groupAccessor = new CacheableGroupAccessor(arg.GroupAccessorToken, arg.InitialEntities, _eventSystem);
-            groupAccessor.MonitorEntityChanges();
+            var groupAccessor = new CacheableGroupAccessor(arg.GroupAccessorToken, arg.InitialEntities);
             return groupAccessor;            
         }
     }

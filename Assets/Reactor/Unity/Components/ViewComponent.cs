@@ -1,11 +1,13 @@
-﻿using Reactor.Components;
+﻿using System;
+using Reactor.Components;
 using UnityEngine;
 
 namespace Reactor.Unity.Components
 {
-    public class ViewComponent : IComponent
+    [Serializable]
+    public class ViewComponent : EntityComponent<ViewComponent>
     {
-        public bool DestroyWithView { get; set; }
-        public GameObject View { get; set; }
+        public bool DestroyWithView;
+        public GameObject View;
     }
 }

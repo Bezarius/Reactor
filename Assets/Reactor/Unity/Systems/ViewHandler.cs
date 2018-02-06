@@ -63,8 +63,17 @@ namespace Reactor.Unity.Systems
         
         public virtual void SetupView(IEntity entity, Func<IEntity, GameObject> viewResolver)
         {
-            var viewComponent = entity.GetComponent<ViewComponent>();
-            if (viewComponent.View != null) { return; }
+            ViewComponent viewComponent;
+            try
+            {
+                viewComponent = entity.GetComponent<ViewComponent>();
+                if (viewComponent.View != null) { return; }
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+                throw;
+            }
 
             var viewObject = viewResolver(entity);
             viewComponent.View = viewObject;

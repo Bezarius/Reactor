@@ -1,3 +1,4 @@
+using System.Linq;
 using Reactor.Pools;
 
 namespace Reactor.Systems.Executor.Handlers
@@ -13,14 +14,28 @@ namespace Reactor.Systems.Executor.Handlers
 
         public void Start(IManualSystem system)
         {
-            var groupAccessor = PoolManager.CreateGroupAccessor(system.TargetGroup);
-            system.StartSystem(groupAccessor);
+            if (system.TargetGroup.TargettedComponents.ToArray().Length > 0)
+            {
+                var groupAccessor = PoolManager.CreateGroupAccessor(system.TargetGroup);
+                system.StartSystem(groupAccessor);
+            }
+            else
+            {
+                system.StartSystem(null);
+            }
         }
 
         public void Stop(IManualSystem system)
         {
-            var groupAccessor = PoolManager.CreateGroupAccessor(system.TargetGroup);
-            system.StopSystem(groupAccessor);
+            if (system.TargetGroup.TargettedComponents.ToArray().Length > 0)
+            {
+                var groupAccessor = PoolManager.CreateGroupAccessor(system.TargetGroup);
+                system.StopSystem(groupAccessor);
+            }
+            else
+            {
+                system.StopSystem(null);
+            }
         }
     }
 }

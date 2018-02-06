@@ -14,10 +14,15 @@ namespace Reactor.Entities
 
         public int GetId()
         {
+            int id;
             if (_ints.Count > 0)
-                return _ints.Dequeue();
-            _counter++;
-            return _counter;
+                id = _ints.Dequeue();
+            else
+            {
+                _counter++;
+                id = _counter;
+            }
+            return id;
         }
 
         public void Release(int id)

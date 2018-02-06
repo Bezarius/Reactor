@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Reactor.Components;
 using Reactor.Entities;
 using Reactor.Extensions;
 using Reactor.Systems;
 using Reactor.Systems.Executor;
-using Reactor.Components;
+using UnityEngine;
 
 namespace Reactor.Groups
 {
@@ -17,42 +18,11 @@ namespace Reactor.Groups
         IGroupReactionSystem[] GroupReactionSystems { get; }
         IInteractReactionSystem[] InteractReactionSystems { get; }
         ITeardownSystem[] TeardownSystems { get; }
-        IGroupAccessor[] GroupAccessors { get;  }
+        IGroupAccessor[] GroupAccessors { get; }
+
+        bool HasGroupOrSystems { get; }
 
         void AddGroupAccessor(IGroupAccessor groupAccessor);
-    }
-
-
-    public class ReactorConnection : ISystemContainer
-    {
-        public SystemReactor UpReactor { get; private set; }
-        public SystemReactor DownReactor { get; private set; }
-
-        public ISetupSystem[] SetupSystems { get; private set; }
-        public IEntityReactionSystem[] EntityReactionSystems { get; private set; }
-        public IGroupReactionSystem[] GroupReactionSystems { get; private set; }
-        public IInteractReactionSystem[] InteractReactionSystems { get; private set; }
-        public ITeardownSystem[] TeardownSystems { get; private set; }
-        public IGroupAccessor[] GroupAccessors { get; private set; }
-
-        public ReactorConnection(SystemReactor upReactor, SystemReactor downReactor)
-        {
-            UpReactor = upReactor;
-            DownReactor = downReactor;
-            GroupAccessors = upReactor.GroupAccessors.Except(downReactor.GroupAccessors).ToArray();
-            SetupSystems = upReactor.SetupSystems.Except(downReactor.SetupSystems).ToArray();
-            EntityReactionSystems = upReactor.EntityReactionSystems.Except(downReactor.EntityReactionSystems).ToArray();
-            GroupReactionSystems = upReactor.GroupReactionSystems.Except(downReactor.GroupReactionSystems).ToArray();
-            InteractReactionSystems = upReactor.InteractReactionSystems.Except(downReactor.InteractReactionSystems).ToArray();
-            TeardownSystems = upReactor.TeardownSystems.Except(downReactor.TeardownSystems).ToArray();
-        }
-
-        public void AddGroupAccessor(IGroupAccessor groupAccessor)
-        {
-            var groupAccessors = GroupAccessors;
-            Array.Resize(ref groupAccessors, GroupAccessors.Length + 1);
-            GroupAccessors[GroupAccessors.Length] = groupAccessor;
-        }
     }
 
     public class SystemReactor : ISystemContainer
@@ -60,6 +30,10 @@ namespace Reactor.Groups
         private readonly ISystemExecutor _systemExecutor;
         public readonly HashSet<Type> TargetTypes;
 
+#if DEBUG && UNITY_EDITOR
+        public List<Type> TypeList { get { return TargetTypes.ToList(); } }
+#endif
+
         public ISetupSystem[] SetupSystems { get; private set; }
         public IEntityReactionSystem[] EntityReactionSystems { get; private set; }
         public IGroupReactionSystem[] GroupReactionSystems { get; private set; }
@@ -67,7 +41,12 @@ namespace Reactor.Groups
         public ITeardownSystem[] TeardownSystems { get; private set; }
         public IGroupAccessor[] GroupAccessors { get; private set; }
 
-        private readonly Dictionary<Type, ReactorConnection> _connections = new Dictionary<Type, ReactorConnection>();
+        public bool HasGroupOrSystems { get; private set; }
+
+
+        private readonly ComponentIndex _componentIndex;
+        private readonly ConnectionIndex _inConnectionIndex;
+        private readonly ConnectionIndex _outConnectionIndex;
 
         // todo: вынести создание в фабрику
         public SystemReactor(ISystemExecutor systemExecutor, HashSet<Type> targetTypes)
@@ -75,51 +54,66 @@ namespace Reactor.Groups
             _systemExecutor = systemExecutor;
             TargetTypes = targetTypes;
 
-            var systems = _systemExecutor.Systems.Where(x => x.TargetGroup.TargettedComponents.All(targetTypes.Contains)).ToList();
-            GroupAccessors = _systemExecutor.PoolManager.PoolAccessors.Where(x=>new HashSet<Type>(x.AccessorToken.ComponentTypes).IsSubsetOf(targetTypes)).ToArray();
+            _componentIndex = new ComponentIndex(targetTypes.ToList());
+            _componentIndex.Build();
+
+            _inConnectionIndex = new ConnectionIndex(targetTypes.ToList());
+            _outConnectionIndex = new ConnectionIndex(targetTypes.ToList());
+
+            var systems = _systemExecutor.Systems
+                .Where(x => x.TargetGroup.TargettedComponents.Any() && x.TargetGroup.TargettedComponents.All(targetTypes.Contains))
+                .ToList();
+
+            GroupAccessors = _systemExecutor.PoolManager.PoolAccessors
+                .Where(x => new HashSet<Type>(x.AccessorToken.ComponentTypes).IsSubsetOf(targetTypes))
+                .ToArray();
+
             SetupSystems = systems.OfType<ISetupSystem>().OrderByPriority().ToArray();
             EntityReactionSystems = systems.OfType<IEntityReactionSystem>().OrderByPriority().ToArray();
             GroupReactionSystems = systems.OfType<IGroupReactionSystem>().OrderByPriority().ToArray();
             InteractReactionSystems = systems.OfType<IInteractReactionSystem>().OrderByPriority().ToArray();
             TeardownSystems = systems.OfType<ITeardownSystem>().OrderByPriority().ToArray();
+
+            HasGroupOrSystems = systems.Count > 0 || GroupAccessors.Length > 0;
         }
 
-        public void AddReactorsConnection(Type componenType, ReactorConnection connection, SystemReactor reactor)
+        public void AddEntityToReactor(IEntity entity)
         {
-            if (!_connections.ContainsKey(componenType))
-            {
-                _connections.Add(componenType, connection);
-                reactor.AddReactorsConnection(componenType, connection, this);
-            }
+            _systemExecutor.AddSystemsToEntity(entity, this);
         }
 
-        public void AddComponent(IEntity entity, Type componenType)
+        public void AddComponent(IEntity entity, IComponent component)
         {
             ReactorConnection connection;
-            if (!_connections.TryGetValue(componenType, out connection))
+            var typeId = component.TypeId;
+            if (!_outConnectionIndex.TryGetValue(typeId, out connection))
             {
-                var set = new HashSet<Type>(TargetTypes) {componenType};
-                SystemReactor reactor = _systemExecutor.GetSystemReactor(set);
-                connection = new ReactorConnection(reactor, this);
-                this.AddReactorsConnection(componenType, connection, reactor);
+                var set = new HashSet<Type>(TargetTypes) { component.Type };
+                SystemReactor nextReactor = _systemExecutor.GetSystemReactor(set);
+                connection = new ReactorConnection(nextReactor, this);
+                _outConnectionIndex.Add(component, connection);
+                nextReactor._inConnectionIndex.Add(component, connection);
             }
-            //entity.Reactor = connection.UpReactor;
+            entity.Reactor = connection.UpReactor;
             _systemExecutor.AddSystemsToEntity(entity, connection);
         }
 
         public void RemoveComponent(IEntity entity, IComponent component)
         {
+            //Debug.Log(string.Format(@"RemoveComponent {0} from entity with id{1}", component.Type.Name, entity.Id));
             ReactorConnection connection;
-            var componentType = component.GetType();
-            if (!_connections.TryGetValue(componentType, out connection))
+            var typeId = component.TypeId;
+            if (!_inConnectionIndex.TryGetValue(typeId, out connection))
             {
                 var set = new HashSet<Type>(TargetTypes);
-                SystemReactor reactor = _systemExecutor.GetSystemReactor(set);
-                connection = new ReactorConnection(this, reactor);
-                this.AddReactorsConnection(componentType, connection, reactor);
+                set.Remove(component.Type);
+                SystemReactor prevReactor = _systemExecutor.GetSystemReactor(set);
+                connection = new ReactorConnection(this, prevReactor);
+                _inConnectionIndex.Add(component, connection);
+                prevReactor._outConnectionIndex.Add(component, connection);
             }
-            //entity.Reactor = connection.DownReactor;
             _systemExecutor.RemoveSystemsFromEntity(entity, connection);
+            entity.Reactor = connection.DownReactor;
         }
 
         public void AddGroupAccessor(IGroupAccessor groupAccessor)
@@ -133,11 +127,39 @@ namespace Reactor.Groups
             foreach (var type in groupAccessor.AccessorToken.ComponentTypes)
             {
                 ReactorConnection connection;
-                if (_connections.TryGetValue(type, out connection) && connection.UpReactor == this)
+                var typeId = TypeHelper.GetTypeId(type);
+                if (_outConnectionIndex.TryGetValue(typeId, out connection) && connection.UpReactor == this)
                 {
                     connection.AddGroupAccessor(groupAccessor);
                 }
             }
+        }
+
+        public int GetComponentIdx(int componentId)
+        {
+            return _componentIndex.GetTypeIndex(componentId);
+        }
+
+        public int GetFutureComponentIdx(IComponent component)
+        {
+            var typeId = component.TypeId;
+            var id = _componentIndex.GetTypeIndex(component.TypeId);
+            if (id == -1)
+            {
+                // компонент не содержится в текущем реакторе. 
+                // Данная ветка необходима для определение "будущего" идентификатора в следующем реакторе
+                ReactorConnection connection;
+                if (!_outConnectionIndex.TryGetValue(typeId, out connection))
+                {
+                    var set = new HashSet<Type>(TargetTypes) { component.Type };
+                    SystemReactor nextReactor = _systemExecutor.GetSystemReactor(set);
+                    connection = new ReactorConnection(nextReactor, this);
+                    _outConnectionIndex.Add(component, connection);
+                    nextReactor._inConnectionIndex.Add(component, connection);
+                }
+                id = connection.UpReactor.GetComponentIdx(typeId);
+            }
+            return id;
         }
     }
 }

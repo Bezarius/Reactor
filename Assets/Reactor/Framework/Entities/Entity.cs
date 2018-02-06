@@ -1,35 +1,112 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Reactor.Components;
-using Reactor.Events;
+using Reactor.Groups;
 using Reactor.Pools;
+using UniRx;
 
 namespace Reactor.Entities
 {
-    public class Entity : IEntity
+
+    public static class TypeHelper
     {
-        private readonly Dictionary<Type, IComponent> _components;
+        private static int _counter;
 
-        public IEventSystem EventSystem { get; private set; }
+        private static readonly Dictionary<Type, int> TypeDict = new Dictionary<Type, int>();
 
-        public int Id { get; private set; }
-        public IPool Pool { get; private set; }
-        public IEnumerable<IComponent> Components { get { return _components.Values; } }
-
-
-        public Entity(int id, IPool pool, IEventSystem eventSystem)
+        public static int GetTypeId(Type type)
         {
-            Id = id;
-            Pool = pool;
-            EventSystem = eventSystem;
-            _components = new Dictionary<Type, IComponent>();
+            int idx;
+            if (!TypeDict.TryGetValue(type, out idx))
+                idx = Initialize(type);
+            return idx;
         }
 
-        public IComponent AddComponent(IComponent component)
+        public static int Initialize(Type type)
         {
-            _components.Add(component.GetType(), component);
-            EventSystem.Publish(new ComponentAddedEvent(this, component));
+            _counter++;
+#if DEBUG
+            if (TypeDict.ContainsKey(type))
+                throw new Exception(string.Format(@"Type '{0}' is already initialized", type));
+#endif
+            TypeDict[type] = _counter;
+            return _counter;
+        }
+
+        static TypeHelper()
+        {
+            var assignFrom = typeof(IComponent);
+
+            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())
+                .Where(t => assignFrom.IsAssignableFrom(t) && !t.IsAbstract).ToList();
+
+            var tt = typeof(TypeCache<>);
+
+            foreach (var type in types)
+            {
+                var args = new[] { type };
+                var cache = tt.MakeGenericType(args);
+                var field = cache.GetField("TypeId", BindingFlags.Static | BindingFlags.Public);
+                var result = field.GetValue(null);
+                //Debug.Log(result);
+                //cache.GetMethod("")
+            }
+        }
+    }
+
+    public static class TypeCache<T>
+    {
+        public static readonly Type Type;
+
+        public static readonly int TypeId;
+
+        static TypeCache()
+        {
+            Type = typeof(T);
+            if (Type == null)
+                throw new Exception("Incorrect type initialization!");
+            TypeId = TypeHelper.Initialize(Type);
+        }
+    }
+
+    public class Entity : IEntity
+    {
+        public int Id { get; private set; }
+
+        public SystemReactor Reactor
+        {
+            get { return _reactor; }
+            set { _reactor = value; }
+        }
+
+        public IPool Pool { get; private set; }
+        public IEnumerable<IComponent> Components { get { return _components; } }
+
+        private readonly ReactiveCommand<IComponent> _addComponentSubject = new ReactiveCommand<IComponent>();
+        public ReactiveCommand<IComponent> OnAddComponent { get { return _addComponentSubject; } }
+
+        private readonly ReactiveCommand<IComponent> _removeComponentSubject = new ReactiveCommand<IComponent>();
+        public ReactiveCommand<IComponent> OnRemoveComponent { get { return _removeComponentSubject; } }
+
+        private SystemReactor _reactor;
+        private readonly List<IComponent> _components;
+
+        public Entity(int id, IEnumerable<IComponent> components, IPool pool, SystemReactor reactor)
+        {
+            _reactor = reactor;
+            Id = id;
+            Pool = pool;
+            _components = components.ToList();
+        }
+
+        public T AddComponent<T>(T component) where T : class, IComponent
+        {
+            var idx = _reactor.GetFutureComponentIdx(component);
+            _components.Insert(idx, component);
+            _reactor.AddComponent(this, component);
+            OnAddComponent.Execute(component);
             return component;
         }
 
@@ -40,63 +117,67 @@ namespace Reactor.Entities
         /// <returns></returns>
         public T AddComponent<T>() where T : class, IComponent, new()
         {
-            return (T)AddComponent(new T());
+            return AddComponent(new T());
         }
 
         public void AddComponents(IEnumerable<IComponent> components)
         {
+            throw new NotImplementedException();
+            /*
             foreach (var component in components)
             {
                 _components.Add(component.GetType(), component);
             }
-            EventSystem.Publish(new ComponentsAddedEvent(this, components));
-        }
-
-        public void RemoveComponent(IComponent component)
-        {
-            if (!_components.ContainsKey(component.GetType()))
-            {
-                return;
-            }
-
-            var disposable = component as IDisposable;
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
-
-            _components.Remove(component.GetType());
-            EventSystem.Publish(new ComponentRemovedEvent(this, component));
+            EventSystem.Publish(new ComponentsAddedEvent(this, components));*/
         }
 
         public void RemoveComponent<T>() where T : class, IComponent
         {
-            if(!HasComponent<T>()) { return; }
+            var typeId = TypeCache<T>.TypeId;
+            var idx = _reactor.GetComponentIdx(typeId);
+            if (_components.Count > idx && _components[idx] != null)
+            {
+                var component = _components[idx];
+                _reactor.RemoveComponent(this, component);
+                _components.RemoveAt(idx);
+                OnRemoveComponent.Execute(component);
+            }
+        }
 
-            var component = GetComponent<T>();
-            RemoveComponent(component);
+        public void RemoveComponent<T>(T component) where T : class, IComponent
+        {
+            var typeId = TypeCache<T>.TypeId;
+            var idx = _reactor.GetComponentIdx(typeId);
+            if (_components.Count > idx && idx >= 0 && _components[idx] != null)
+            {
+                _components.RemoveAt(idx);
+            }
+            _reactor.RemoveComponent(this, component);
+            OnRemoveComponent.Execute(component);
         }
 
         private void RemoveComponents(IEnumerable<IComponent> components)
         {
             components = components.ToArray();
-            foreach (var component in components)
+            foreach (var component in components.Where(x => x != null))
             {
-                var type = component.GetType();
-                if (!_components.ContainsKey(type))
+                var typeId = component.TypeId;
+                var idx = _reactor.GetComponentIdx(typeId);
+
+                if (idx >= 0 && idx > _components.Count || _components[idx] == null)
                 {
                     continue;
                 }
 
                 var disposable = component as IDisposable;
+
                 if (disposable != null)
                 {
                     disposable.Dispose();
                 }
-                _components.Remove(type);
-                EventSystem.Publish(new ComponentRemovedEvent(this, component));
+                _reactor.RemoveComponent(this, component);
+                _components.RemoveAt(idx);
             }
-            //EventSystem.Publish(new ComponentsRemovedEvent(this, components));
         }
 
         public void RemoveAllComponents(Func<IComponent, bool> func)
@@ -110,29 +191,36 @@ namespace Reactor.Entities
             RemoveComponents(Components);
         }
 
-        public T GetComponent<T>(Type t) where T : class, IComponent
-        {
-            return _components[t] as T;
-        }
-
         public bool HasComponent<T>() where T : class, IComponent
         {
-            return _components.ContainsKey(typeof(T));
+            var typeId = TypeCache<T>.TypeId;
+            var idx = _reactor.GetComponentIdx(typeId);
+            return idx >= 0 && _components.Count > idx && _components[idx] != null;
         }
 
         public bool HasComponents(params Type[] componentTypes)
         {
-            return _components.Count != 0 && componentTypes.All(x => _components.ContainsKey(x));
+            return _components.Count > 0 && componentTypes.All(x => _components[_reactor.GetComponentIdx(TypeHelper.GetTypeId(x))] != null);
         }
+
+
 
         public T GetComponent<T>() where T : class, IComponent
         {
-            return _components[typeof(T)] as T;
+            //var type = typeof(T);
+            //Assert.IsTrue(_components.ContainsKey(type), string.Format(@"Entity with id: '{0}', doesn't contain '{1}' component", this.Id, type.Name));
+            var typeId = TypeCache<T>.TypeId;
+            var idx = _reactor.GetComponentIdx(typeId);
+            if (idx >= 0)
+                return _components[idx] as T;
+            return null;
         }
 
         public void Dispose()
         {
             RemoveAllComponents();
+            OnAddComponent.Dispose();
+            OnRemoveComponent.Dispose();
         }
     }
 }

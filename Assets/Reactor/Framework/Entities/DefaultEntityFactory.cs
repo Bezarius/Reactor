@@ -1,20 +1,15 @@
-﻿using Reactor.Events;
+﻿using System.Collections.Generic;
+using Reactor.Components;
+using Reactor.Groups;
 using Reactor.Pools;
 
 namespace Reactor.Entities
 {
     public class DefaultEntityFactory : IEntityFactory
     {
-        private readonly IEventSystem _eventSystem;
-
-        public DefaultEntityFactory(IEventSystem eventSystem)
+        public IEntity Create(IPool pool, int entityId, IEnumerable<IComponent> components, SystemReactor systemReactor)
         {
-            _eventSystem = eventSystem;
-        }
-
-        public IEntity Create(IPool pool, int entityId)
-        {
-            return new Entity(entityId, pool, _eventSystem);
+            return new Entity(entityId, components, pool, systemReactor);
         }
     }
 }

@@ -6,6 +6,7 @@ using Reactor.Groups;
 using Reactor.Pools;
 using Reactor.Systems;
 using Reactor.Unity.Components;
+using Reactor.Unity.MonoBehaviours;
 using UniRx;
 using UnityEngine;
 
@@ -33,6 +34,8 @@ namespace Reactor.Unity.Systems
 
             PrefabTemplate = ResolvePrefabTemplate();
 
+            PrefabTemplate.AddComponent<EntityView>();
+
             // todo: dispose on system remove
             EventSystem.Receive<EntityRemovedEvent>()
                 .Subscribe(x =>
@@ -53,12 +56,11 @@ namespace Reactor.Unity.Systems
         public virtual void Setup(IEntity entity)
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
-            if (viewComponent.View != null) { return; }
-
-            var viewObject = AllocateView(entity);
-            viewComponent.View = viewObject;
-
-            _views.Add(entity, viewObject);
+            if (viewComponent.View == null) {
+                var viewObject = AllocateView(entity);
+                viewComponent.View = viewObject;
+                _views.Add(entity, viewObject);
+            }
         }
     }
 }

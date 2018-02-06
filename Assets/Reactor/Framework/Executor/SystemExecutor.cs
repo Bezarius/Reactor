@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Reactor.Components;
 using Reactor.Entities;
 using Reactor.Events;
 using Reactor.Extensions;
@@ -8,11 +9,12 @@ using Reactor.Groups;
 using Reactor.Pools;
 using Reactor.Systems.Executor.Handlers;
 using UniRx;
+using UnityEngine;
 
 namespace Reactor.Systems.Executor
 {
 
-    public sealed class SystemHandlerManager
+    public sealed class SystemHandlerManager : ISystemHandlerManager
     {
         public IEntityReactionSystemHandler EntityReactionSystemHandler { get; private set; }
         public IGroupReactionSystemHandler GroupReactionSystemHandler { get; private set; }
@@ -36,109 +38,66 @@ namespace Reactor.Systems.Executor
         }
     }
 
+    public sealed class CoreManager : ICoreManager
+    {
+        public IPoolManager PoolManager { get; private set; }
+        public ISystemHandlerManager HandlerManager { get; private set; }
+
+        public CoreManager(IPoolManager poolManager, ISystemHandlerManager handlerManager, ISystemExecutor systemExecutor)
+        {
+            PoolManager = poolManager;
+            HandlerManager = handlerManager;
+            systemExecutor.Start(this);
+        }
+    }
+
     public sealed class SystemExecutor : ISystemExecutor, IDisposable
     {
         private readonly IList<ISystem> _systems;
-        private readonly IList<IDisposable> _eventSubscriptions;
+        private IList<IDisposable> _eventSubscriptions;
         private readonly Dictionary<ISystem, Dictionary<IEntity, SubscriptionToken>> _entitySubscribtionsOnSystems;
         private readonly Dictionary<ISystem, SubscriptionToken> _nonEntitySubscriptions;
         private readonly List<SystemReactor> _systemReactors = new List<SystemReactor>();
-        private SystemReactor[] _entityToReactorIndex = new SystemReactor[0];
 
         private SystemReactor _emptyReactor;
-        private SystemReactor EmptyReactor
+        private ICoreManager _coreManager;
+
+        public SystemReactor EmptyReactor
         {
             get { return _emptyReactor ?? (_emptyReactor = new SystemReactor(this, new HashSet<Type>())); }
         }
 
-        public IEventSystem EventSystem { get; private set; }
-        public IPoolManager PoolManager { get; private set; }
+        private IEventSystem EventSystem { get; set; }
+
+        public IPoolManager PoolManager
+        {
+            get { return _coreManager.PoolManager; }
+        }
+
+        public ISystemHandlerManager HandlerManager
+        {
+            get { return _coreManager.HandlerManager; }
+        }
+
         public IEnumerable<ISystem> Systems { get { return _systems; } }
 
-        public IEntityReactionSystemHandler EntityReactionSystemHandler { get; private set; }
-        public IGroupReactionSystemHandler GroupReactionSystemHandler { get; private set; }
-        public ISetupSystemHandler SetupSystemHandler { get; private set; }
-        public IInteractReactionSystemHandler InteractReactionSystemHandler { get; private set; }
-        public IManualSystemHandler ManualSystemHandler { get; private set; }
-
-
-        public SystemExecutor(
-            IPoolManager poolManager,
-            IEventSystem eventSystem,
-            IEntityReactionSystemHandler entityReactionSystemHandler,
-            IGroupReactionSystemHandler groupReactionSystemHandler,
-            ISetupSystemHandler setupSystemHandler,
-            IInteractReactionSystemHandler interactReactionSystemHandler,
-            IManualSystemHandler manualSystemHandler)
+        public SystemExecutor(IEventSystem eventSystem)
         {
-            PoolManager = poolManager;
             EventSystem = eventSystem;
-            EntityReactionSystemHandler = entityReactionSystemHandler;
-            GroupReactionSystemHandler = groupReactionSystemHandler;
-            SetupSystemHandler = setupSystemHandler;
-            InteractReactionSystemHandler = interactReactionSystemHandler;
-            ManualSystemHandler = manualSystemHandler;
-
-            var addEntitySubscription = EventSystem.Receive<EntityAddedEvent>().Subscribe(OnEntityAddedToPool);
-            var removeEntitySubscription = EventSystem.Receive<EntityRemovedEvent>().Subscribe(OnEntityRemovedFromPool);
-            var addComponentSubscription = EventSystem.Receive<ComponentAddedEvent>().Subscribe(OnEntityComponentAdded);
-            var removeComponentSubscription = EventSystem.Receive<ComponentRemovedEvent>().Subscribe(OnEntityComponentRemoved);
-            var groupAccessorAddedEventSubscription = EventSystem.Receive<GroupAccessorAddedEvent>().Subscribe(OnGroupAccessorAdded); 
-
             _systems = new List<ISystem>();
             _entitySubscribtionsOnSystems = new Dictionary<ISystem, Dictionary<IEntity, SubscriptionToken>>();
             _nonEntitySubscriptions = new Dictionary<ISystem, SubscriptionToken>();
+        }
+
+        public void Start(ICoreManager coreManager)
+        {
+            _coreManager = coreManager;
+
+            var groupAccessorAddedEventSubscription = EventSystem.Receive<GroupAccessorAddedEvent>().Subscribe(OnGroupAccessorAdded);
             _eventSubscriptions = new List<IDisposable>
             {
-                addEntitySubscription,
-                removeEntitySubscription,
-                addComponentSubscription,
-                removeComponentSubscription,
                 groupAccessorAddedEventSubscription
             };
-        }
-
-
-        public void OnEntityComponentAdded(ComponentAddedEvent args)
-        {
-            var entity = args.Entity;
-            var type = args.Component.GetType();
-
-            if (entity.Id < _entityToReactorIndex.Length)
-            {
-                var reactor = _entityToReactorIndex[entity.Id];
-                if (reactor != null)
-                {
-                    reactor.AddComponent(entity, type);
-                }
-                else
-                {
-                    reactor = this.GetSystemReactor(new HashSet<Type> { type });
-                    _entityToReactorIndex[entity.Id] = reactor;
-                    AddSystemsToEntity(entity, reactor);
-                }
-            }
-            else
-            {
-                Array.Resize(ref _entityToReactorIndex, entity.Id + 1);
-                var reactor = this.GetSystemReactor(new HashSet<Type> { type });
-                _entityToReactorIndex[entity.Id] = reactor;
-                AddSystemsToEntity(entity, reactor);
-            }
-        }
-
-        public void OnEntityComponentRemoved(ComponentRemovedEvent args)
-        {
-            _entityToReactorIndex[args.Entity.Id].RemoveComponent(args.Entity, args.Component);
-        }
-
-        public void OnEntityAddedToPool(EntityAddedEvent args)
-        {
-        }
-
-        public void OnEntityRemovedFromPool(EntityRemovedEvent args)
-        {
-            _entityToReactorIndex[args.Entity.Id] = null;
         }
 
         public void OnGroupAccessorAdded(GroupAccessorAddedEvent args)
@@ -159,7 +118,7 @@ namespace Reactor.Systems.Executor
             var manualSystem = system as IManualSystem;
             if (manualSystem != null)
             {
-                ManualSystemHandler.Stop(manualSystem);
+                HandlerManager.ManualSystemHandler.Stop(manualSystem);
             }
 
             if (_entitySubscribtionsOnSystems.ContainsKey(system))
@@ -179,31 +138,40 @@ namespace Reactor.Systems.Executor
             _systems.Add(system);
             if (system is ISetupSystem)
             {
-                _entitySubscribtionsOnSystems.Add(system, SetupSystemHandler.Setup((ISetupSystem)system)
-                    .ToDictionary(x => x.AssociatedObject as IEntity));
+                _entitySubscribtionsOnSystems.Add(system, HandlerManager.SetupSystemHandler.Setup((ISetupSystem)system)
+                    .ToDictionary(x => x.AssociatedEntity));
             }
-            else if (system is IGroupReactionSystem)
+            if (system is IGroupReactionSystem)
             {
-                _nonEntitySubscriptions.Add(system, GroupReactionSystemHandler.Setup((IGroupReactionSystem)system));
+                _nonEntitySubscriptions.Add(system, HandlerManager.GroupReactionSystemHandler.Setup((IGroupReactionSystem)system));
             }
-            else if (system is IEntityReactionSystem)
+            if (system is IEntityReactionSystem)
             {
-                _entitySubscribtionsOnSystems.Add(system, EntityReactionSystemHandler.Setup((IEntityReactionSystem)system)
-                    .ToDictionary(x => x.AssociatedObject as IEntity));
+                _entitySubscribtionsOnSystems.Add(system, HandlerManager.EntityReactionSystemHandler.Setup((IEntityReactionSystem)system)
+                    .ToDictionary(x => x.AssociatedEntity));
             }
-            else if (system is IInteractReactionSystem)
+            if (system is IInteractReactionSystem)
             {
-                _entitySubscribtionsOnSystems.Add(system, InteractReactionSystemHandler.Setup((IInteractReactionSystem)system)
-                    .ToDictionary(x => x.AssociatedObject as IEntity));
+                _entitySubscribtionsOnSystems.Add(system, HandlerManager.InteractReactionSystemHandler.Setup((IInteractReactionSystem)system)
+                    .ToDictionary(x => x.AssociatedEntity));
             }
-            else if (system is IManualSystem)
+            if (system is IManualSystem)
             {
-                ManualSystemHandler.Start((IManualSystem)system);
+                HandlerManager.ManualSystemHandler.Start((IManualSystem)system);
             }
         }
 
 
-        
+        public SystemReactor GetSystemReactor(IEnumerable<IComponent> components)
+        {
+            var hs = new HashSet<Type>();
+            foreach (var component in components)
+            {
+                hs.Add(component.GetType());
+            }
+            return GetSystemReactor(hs);
+        }
+
         //todo: добавить оптимизацию для сущностей которые создаются с помощью блюпринтов. Даст прирост ~7%
         public SystemReactor GetSystemReactor(HashSet<Type> targetTypes)
         {
@@ -227,75 +195,86 @@ namespace Reactor.Systems.Executor
 
         public void AddSystemsToEntity(IEntity entity, ISystemContainer container)
         {
-            for (int i = 0; i < container.SetupSystems.Length; i++)
+            if (container.HasGroupOrSystems)
             {
-                var system = container.SetupSystems[i];
-                var subscription = SetupSystemHandler.ProcessEntity(system, entity);
-                if (subscription != null)
+                for (int i = 0; i < container.SetupSystems.Length; i++)
                 {
-                    _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                    var system = container.SetupSystems[i];
+                    var subscription = HandlerManager.SetupSystemHandler.ProcessEntity(system, entity);
+                    if (subscription != null)
+                    {
+                        _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                    }
                 }
-            }
 
-            for (int i = 0; i < container.EntityReactionSystems.Length; i++)
-            {
-                var system = container.EntityReactionSystems[i];
-                var subscription = EntityReactionSystemHandler.ProcessEntity(system, entity);
-                if (subscription != null)
+                for (int i = 0; i < container.EntityReactionSystems.Length; i++)
                 {
-                    _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                    var system = container.EntityReactionSystems[i];
+                    var subscription = HandlerManager.EntityReactionSystemHandler.ProcessEntity(system, entity);
+                    if (subscription != null)
+                    {
+                        _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                    }
                 }
-            }
 
-            for (int i = 0; i < container.InteractReactionSystems.Length; i++)
-            {
-                var system = container.InteractReactionSystems[i];
-                var subscription = InteractReactionSystemHandler.ProcessEntity(system, entity);
-                if (subscription != null)
+                for (int i = 0; i < container.InteractReactionSystems.Length; i++)
                 {
-                    _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                    var system = container.InteractReactionSystems[i];
+                    var subscription = HandlerManager.InteractReactionSystemHandler.ProcessEntity(system, entity);
+                    if (subscription != null)
+                    {
+                        _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                    }
                 }
-            }
 
-            for (int i = 0; i < container.GroupAccessors.Length; i++)
-            {
-                var accessor = container.GroupAccessors[i];
-                accessor.AddEntity(entity);
+                for (int i = 0; i < container.GroupAccessors.Length; i++)
+                {
+                    var accessor = container.GroupAccessors[i];
+                    accessor.AddEntity(entity);
+                }
             }
         }
 
         private void RemoveEntitySubscriptionFromSystem(IEntity entity, ISystem system)
         {
-            var subscriptionTokens = _entitySubscribtionsOnSystems[system][entity];
-            subscriptionTokens.Disposable.Dispose();
-            _entitySubscribtionsOnSystems[system].Remove(entity);
+            try
+            {
+                var subscriptionTokens = _entitySubscribtionsOnSystems[system][entity];
+                subscriptionTokens.Disposable.Dispose();
+                _entitySubscribtionsOnSystems[system].Remove(entity);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(string.Format("Remove '{0}' subscription form entity with id: '{1}' error:\n{2}", system.GetType().Name, entity.Id, e));
+            }
         }
 
         public void RemoveSystemsFromEntity(IEntity entity, ISystemContainer container)
         {
-            for (int i = 0; i < container.TeardownSystems.Length; i++)
+            if (container.HasGroupOrSystems)
             {
-                var system = container.TeardownSystems[i];
+                for (int i = 0; i < container.TeardownSystems.Length; i++)
+                {
+                    var system = container.TeardownSystems[i];
 
-                system.Teardown(entity);
+                    system.Teardown(entity);
+                }
 
-                RemoveEntitySubscriptionFromSystem(entity, system);
-            }
+                for (int i = 0; i < container.EntityReactionSystems.Length; i++)
+                {
+                    RemoveEntitySubscriptionFromSystem(entity, container.EntityReactionSystems[i]);
+                }
 
-            for (int i = 0; i < container.EntityReactionSystems.Length; i++)
-            {
-                RemoveEntitySubscriptionFromSystem(entity, container.EntityReactionSystems[i]);
-            }
+                for (int i = 0; i < container.InteractReactionSystems.Length; i++)
+                {
+                    RemoveEntitySubscriptionFromSystem(entity, container.InteractReactionSystems[i]);
+                }
 
-            for (int i = 0; i < container.InteractReactionSystems.Length; i++)
-            {
-                RemoveEntitySubscriptionFromSystem(entity, container.InteractReactionSystems[i]);
-            }
-
-            for (int i = 0; i < container.GroupAccessors.Length; i++)
-            {
-                var accessor = container.GroupAccessors[i];
-                accessor.RemoveEntity(entity);
+                for (int i = 0; i < container.GroupAccessors.Length; i++)
+                {
+                    var accessor = container.GroupAccessors[i];
+                    accessor.RemoveEntity(entity);
+                }
             }
         }
 

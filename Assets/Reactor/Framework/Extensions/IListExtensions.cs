@@ -11,7 +11,7 @@ namespace Reactor.Extensions
         public static IEnumerable<SubscriptionToken> GetTokensFor(this IList<SubscriptionToken> subscriptionTokens,
             IEntity entity)
         {
-            return subscriptionTokens.Where(x => x.AssociatedObject == entity);
+            return subscriptionTokens.Where(x => x.AssociatedEntity == entity);
         }
 
         public static void RemoveAll<T>(this IList<T> list, IEnumerable<T> elementsToRemove)

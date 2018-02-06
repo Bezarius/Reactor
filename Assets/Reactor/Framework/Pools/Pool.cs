@@ -1,13 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Assets.Game.Components;
 using Reactor.Blueprints;
+using Reactor.Components;
 using Reactor.Entities;
 using Reactor.Events;
+using Reactor.Groups;
+using Reactor.Systems.Executor;
+using UnityEngine.Assertions;
 
 namespace Reactor.Pools
 {
     public class Pool : IPool
     {
         private readonly IEntityIndexPool _indexPool;
+        private readonly ISystemExecutor _executor;
         private readonly HashSet<IEntity> _entities;
 
         public string Name { get; private set; }
@@ -15,25 +23,94 @@ namespace Reactor.Pools
         public IEventSystem EventSystem { get; private set; }
         public IEntityFactory EntityFactory { get; private set; }
 
-        public Pool(string name, IEntityFactory entityFactory, IEntityIndexPool indexPool, IEventSystem eventSystem)
+        // todo: move to global index
+        private Dictionary<Type, SystemReactor> _reactorIndex = new Dictionary<Type, SystemReactor>();
+
+        public Pool(string name, IEntityFactory entityFactory, IEntityIndexPool indexPool, ISystemExecutor executor, IEventSystem eventSystem)
         {
             _indexPool = indexPool;
+            _executor = executor;
             _entities = new HashSet<IEntity>();
             Name = name;
             EventSystem = eventSystem;
             EntityFactory = entityFactory;
         }
 
-        public IEntity CreateEntity(IBlueprint blueprint = null)
+        public IEntity BuildEntity<T>(T blueprint) where T : class, IBlueprint
         {
-            var entity = EntityFactory.Create(this, _indexPool.GetId());
+            Assert.IsNotNull(blueprint);
+
+            var type = typeof(T);
+            var components = blueprint.Build().ToList();
+
+            SystemReactor reactor;
+
+            if (!_reactorIndex.TryGetValue(type, out reactor))
+            {
+                var hs = new HashSet<Type>();
+                foreach (var component in components)
+                {
+                    hs.Add(component.GetType());
+                }
+                // todo: находит реактор, у которого индекс не совпадает с сущностью
+                reactor = _executor.GetSystemReactor(hs);  
+            }
+
+            Assert.IsNotNull(reactor);
+
+            var sortedComponents = new IComponent[components.Count];
+            foreach (var component in components)
+            {
+                sortedComponents[reactor.GetComponentIdx(component.TypeId)] = component;
+            }
+
+            var entity = EntityFactory.Create(this, _indexPool.GetId(), sortedComponents, reactor);
 
             _entities.Add(entity);
 
-            if (blueprint != null)
+            reactor.AddEntityToReactor(entity);
+
+            EventSystem.Publish(new EntityAddedEvent(entity, this));
+
+            return entity;
+        }
+
+        public IEntity CreateEntity()
+        {
+            var components = new List<IComponent>();
+
+            SystemReactor reactor = _executor.GetSystemReactor(components);
+
+            Assert.IsNotNull(reactor);
+
+            var entity = EntityFactory.Create(this, _indexPool.GetId(), components, reactor);
+
+            _entities.Add(entity);
+
+            reactor.AddEntityToReactor(entity);
+
+            EventSystem.Publish(new EntityAddedEvent(entity, this));
+
+            return entity;
+        }
+
+        public IEntity CreateEntity(IEnumerable<IComponent> components)
+        {
+            SystemReactor reactor = _executor.GetSystemReactor(components);
+
+            Assert.IsNotNull(reactor);
+
+            var sortedComponents = new IComponent[components.Count()];
+            foreach (var component in components)
             {
-                blueprint.Apply(entity);
+                sortedComponents[reactor.GetComponentIdx(component.TypeId)] = component;
             }
+
+            var entity = EntityFactory.Create(this, _indexPool.GetId(), sortedComponents, reactor);
+
+            _entities.Add(entity);
+
+            reactor.AddEntityToReactor(entity);
 
             EventSystem.Publish(new EntityAddedEvent(entity, this));
 
@@ -45,7 +122,6 @@ namespace Reactor.Pools
             _entities.Remove(entity);
             _indexPool.Release(entity.Id);
             entity.Dispose();
-
             EventSystem.Publish(new EntityRemovedEvent(entity, this));
         }
     }
