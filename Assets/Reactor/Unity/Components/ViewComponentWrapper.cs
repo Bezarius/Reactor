@@ -4,7 +4,9 @@
     {
         protected override void Initialize()
         {
-            (this.Component as ViewComponent).View = this.gameObject;
+            var view = this.Component as ViewComponent;
+            if (view != null && view.View == null)
+                view.View = this.gameObject;
         }
     }
 }

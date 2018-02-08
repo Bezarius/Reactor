@@ -6,6 +6,7 @@ using Reactor.Components;
 using Reactor.Groups;
 using Reactor.Pools;
 using UniRx;
+using UnityEngine;
 
 namespace Reactor.Entities
 {
@@ -103,6 +104,7 @@ namespace Reactor.Entities
 
         public T AddComponent<T>(T component) where T : class, IComponent
         {
+            //Debug.Log(string.Format("add '{0}' to entity with id: {1}", typeof(T), Id));
             var idx = _reactor.GetFutureComponentIdx(component);
             _components.Insert(idx, component);
             _reactor.AddComponent(this, component);

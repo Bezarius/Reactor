@@ -40,7 +40,7 @@ namespace Reactor.Unity.Systems
                             viewSubscription.Dispose();
                         }
                         var view = (x.Component as ViewComponent).View;
-                        if(view != null)
+                        if (view != null)
                             DestroyView(view);
                     }
                 });
@@ -60,7 +60,7 @@ namespace Reactor.Unity.Systems
         {
             Object.Destroy(view);
         }
-        
+
         public virtual void SetupView(IEntity entity, Func<IEntity, GameObject> viewResolver)
         {
             ViewComponent viewComponent;
@@ -71,8 +71,7 @@ namespace Reactor.Unity.Systems
             }
             catch (Exception e)
             {
-                Debug.Log(e);
-                throw;
+                throw e;
             }
 
             var viewObject = viewResolver(entity);

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Reactor.Components;
 using Reactor.Entities;
 using Reactor.Pools;
 using UniRx;
@@ -7,8 +9,13 @@ using Zenject;
 
 namespace Reactor.Unity.MonoBehaviours
 {
+    public interface IEntityView
+    {
+        IEntity Entity { get; set; }
+    }
+
     [Serializable]
-    public class EntityView : MonoBehaviour
+    public class EntityView : MonoBehaviour, IEntityView
     {
         [SerializeField]
         private string _poolName;
@@ -25,7 +32,6 @@ namespace Reactor.Unity.MonoBehaviours
             }
             set
             {
-                // возможны ложные срабатывания, нужно проверить
                 StopComponentMonitor();
                 _entity = value;
                 StartComponentMonitor();
@@ -43,7 +49,7 @@ namespace Reactor.Unity.MonoBehaviours
             if (Entity == null && _poolManager != null)
             {
                 var pool = _poolManager.GetPool(_poolName);
-                Entity = pool.CreateEntity();
+                _entity = pool.CreateEntity();
             }
         }
 
@@ -86,10 +92,13 @@ namespace Reactor.Unity.MonoBehaviours
         private void StopComponentMonitor()
         {
             //Debug.Log("StopComponentMonitor");
-            var components = this.GetComponents(typeof(ComponentWrapper<>));
-            foreach (var component in components)
+
+            var components = this.GetComponents(typeof(MonoBehaviour))
+                .Where(x => x.GetType().IsAssignableFrom(typeof(IComponent)))
+                .ToList();
+            foreach (MonoBehaviour component in components)
             {
-                Destroy(component);
+                component.enabled = false;
             }
             if (_compositeDisposable.Count > 0)
                 _compositeDisposable.Dispose();

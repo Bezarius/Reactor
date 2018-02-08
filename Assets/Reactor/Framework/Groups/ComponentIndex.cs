@@ -16,6 +16,7 @@ namespace Reactor.Groups
             _types = targetTypes;
         }
 
+        // todo: check posibility for fast rebuild if new type in array(_componentIdx) range
         public void Build()
         {
             if (_types.Count > 0)
@@ -23,21 +24,15 @@ namespace Reactor.Groups
                 var ids = new int[_types.Count];
                 var i = 0;
 
-                // получение идентификаторов типа
                 foreach (var targetType in _types)
                 {
                     ids[i] = TypeHelper.GetTypeId(targetType);
                     i++;
                 }
 
-                // поиск максимального значения
-                ids = ids.OrderBy(x => x).ToArray();
-                var lastIdx = ids[_types.Count - 1];
+                // fill array -1
+                _componentIdx = Enumerable.Repeat(-1, ids.Max() + 1).ToArray();
 
-                // инициализация массива требуемого размера
-                _componentIdx = Enumerable.Repeat(-1, lastIdx + 1).ToArray();
-
-                // создание связующего массива 
                 for (int j = 0; j < ids.Length; j++)
                 {
                     _componentIdx[ids[j]] = j;

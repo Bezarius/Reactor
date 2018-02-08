@@ -103,7 +103,7 @@ namespace Reactor.Systems.Executor
         public void OnGroupAccessorAdded(GroupAccessorAddedEvent args)
         {
             var hashSet = new HashSet<Type>(args.GroupAccessorToken.ComponentTypes);
-            var reactors = _systemReactors.Where(x => x.TargetTypes.IsSupersetOf(hashSet));
+            var reactors = _systemReactors.Where(x => x.TargetTypesSet.IsSupersetOf(hashSet));
             foreach (var systemReactor in reactors)
             {
                 systemReactor.AddGroupAccessor(args.GroupAccessor);
@@ -162,6 +162,45 @@ namespace Reactor.Systems.Executor
         }
 
 
+        public SystemReactor GetOrCreateConcreteSystemReactor(IList<Type> types)
+        {
+            SystemReactor reactor = null;
+            foreach (var systemReactor in _systemReactors)
+            {
+                if (systemReactor.TargetTypesList.Count == types.Count)
+                {
+                    for (int i = 0; i < types.Count; i++)
+                    {
+                        if (systemReactor.TargetTypesList[i] == types[i] && i == types.Count)
+                        {
+                            reactor = systemReactor;
+                        }
+                    }
+                }
+            }
+            if (reactor == null)
+            {
+                reactor = new SystemReactor(this, new HashSet<Type>(types));
+                string typeNames = reactor.TargetTypesList.Select(x => x.Name).Aggregate(string.Empty,
+                    (current, typeName) => current + string.Format("{0}; ", typeName));
+                //Debug.Log(string.Format("created new reactor with types: {0}", typeNames));
+                _systemReactors.Add(reactor);
+            }
+            else
+            {
+                string typeNames = reactor.TargetTypesList.Select(x => x.Name).Aggregate(string.Empty,
+                    (current, typeName) => current + string.Format("{0}; ", typeName));
+                //Debug.Log(string.Format("Using existing reactor  with types: {0}", typeNames));
+            }
+            return reactor;
+        }
+
+
+        /// <summary>
+        /// Не учитывает порядок типов в сущности. Использовать нужно осторожно, т.к. может привести к несоответствию индекса компонентов
+        /// </summary>
+        /// <param name="components"></param>
+        /// <returns></returns>
         public SystemReactor GetSystemReactor(IEnumerable<IComponent> components)
         {
             var hs = new HashSet<Type>();
@@ -172,19 +211,24 @@ namespace Reactor.Systems.Executor
             return GetSystemReactor(hs);
         }
 
-        //todo: добавить оптимизацию для сущностей которые создаются с помощью блюпринтов. Даст прирост ~7%
+        /// <summary>
+        /// Не учитывает порядок типов в сущности. Использовать нужно осторожно, т.к. может привести к несоответствию индекса компонентов
+        /// </summary>
+        /// <param name="targetTypes"></param>
+        /// <returns></returns>
         public SystemReactor GetSystemReactor(HashSet<Type> targetTypes)
         {
             if (targetTypes.Count > 0)
             {
                 SystemReactor reactor =
                     _systemReactors.FirstOrDefault(
-                        x => x.TargetTypes.SetEquals(targetTypes));
+                        x => x.TargetTypesSet.SetEquals(targetTypes));
+
+
 
                 if (reactor == null)
                 {
                     reactor = new SystemReactor(this, targetTypes);
-                    // todo: find all subset groups
                     _systemReactors.Add(reactor);
                 }
 

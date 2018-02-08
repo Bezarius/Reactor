@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Reactor.Entities;
-using UnityEditor;
 using UnityEngine;
 
 namespace Reactor.Components
 {
+    [Serializable]
     public abstract class EntityComponent<T> : IComponent where T : class, IComponent, new()
     {
         private static int _typeId;

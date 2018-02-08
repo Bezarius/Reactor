@@ -28,11 +28,8 @@ namespace Reactor.Groups
     public class SystemReactor : ISystemContainer
     {
         private readonly ISystemExecutor _systemExecutor;
-        public readonly HashSet<Type> TargetTypes;
-
-#if DEBUG && UNITY_EDITOR
-        public List<Type> TypeList { get { return TargetTypes.ToList(); } }
-#endif
+        public readonly HashSet<Type> TargetTypesSet;
+        public List<Type> TargetTypesList;
 
         public ISetupSystem[] SetupSystems { get; private set; }
         public IEntityReactionSystem[] EntityReactionSystems { get; private set; }
@@ -52,7 +49,8 @@ namespace Reactor.Groups
         public SystemReactor(ISystemExecutor systemExecutor, HashSet<Type> targetTypes)
         {
             _systemExecutor = systemExecutor;
-            TargetTypes = targetTypes;
+            TargetTypesSet = targetTypes;
+            TargetTypesList = targetTypes.ToList();
 
             _componentIndex = new ComponentIndex(targetTypes.ToList());
             _componentIndex.Build();
@@ -88,9 +86,9 @@ namespace Reactor.Groups
             var typeId = component.TypeId;
             if (!_outConnectionIndex.TryGetValue(typeId, out connection))
             {
-                var set = new HashSet<Type>(TargetTypes) { component.Type };
-                SystemReactor nextReactor = _systemExecutor.GetSystemReactor(set);
-                connection = new ReactorConnection(nextReactor, this);
+                var typeList = new List<Type>(TargetTypesSet) { component.Type };
+                SystemReactor nextReactor = _systemExecutor.GetOrCreateConcreteSystemReactor(typeList);
+                connection = new ReactorConnection(component.Type, nextReactor, this);
                 _outConnectionIndex.Add(component, connection);
                 nextReactor._inConnectionIndex.Add(component, connection);
             }
@@ -105,10 +103,10 @@ namespace Reactor.Groups
             var typeId = component.TypeId;
             if (!_inConnectionIndex.TryGetValue(typeId, out connection))
             {
-                var set = new HashSet<Type>(TargetTypes);
-                set.Remove(component.Type);
-                SystemReactor prevReactor = _systemExecutor.GetSystemReactor(set);
-                connection = new ReactorConnection(this, prevReactor);
+                var typeList = new List<Type>(TargetTypesSet);
+                typeList.Remove(component.Type);
+                SystemReactor prevReactor = _systemExecutor.GetOrCreateConcreteSystemReactor(typeList);
+                connection = new ReactorConnection(component.Type, this, prevReactor);
                 _inConnectionIndex.Add(component, connection);
                 prevReactor._outConnectionIndex.Add(component, connection);
             }
@@ -151,11 +149,15 @@ namespace Reactor.Groups
                 ReactorConnection connection;
                 if (!_outConnectionIndex.TryGetValue(typeId, out connection))
                 {
-                    var set = new HashSet<Type>(TargetTypes) { component.Type };
-                    SystemReactor nextReactor = _systemExecutor.GetSystemReactor(set);
-                    connection = new ReactorConnection(nextReactor, this);
+                    var typeList = new List<Type>(TargetTypesSet) { component.Type };
+                    SystemReactor nextReactor = _systemExecutor.GetOrCreateConcreteSystemReactor(typeList);
+                    connection = new ReactorConnection(component.Type, nextReactor, this);
                     _outConnectionIndex.Add(component, connection);
                     nextReactor._inConnectionIndex.Add(component, connection);
+                }
+                else
+                {
+                    Debug.Log("use existing reactor");
                 }
                 id = connection.UpReactor.GetComponentIdx(typeId);
             }

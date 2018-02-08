@@ -1,8 +1,11 @@
-﻿using Reactor.Components;
+﻿using System;
+using Reactor.Components;
 using Reactor.Unity.MonoBehaviours;
 using UnityEngine;
 
+// todo: add auto execution order
 
+[Serializable]
 [DisallowMultipleComponent]
 public class ComponentWrapper<TComponent> : MonoBehaviour where TComponent : class, IComponent, new()
 {

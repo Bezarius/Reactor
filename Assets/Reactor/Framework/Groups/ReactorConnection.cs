@@ -7,6 +7,8 @@ namespace Reactor.Groups
 {
     public class ReactorConnection : ISystemContainer
     {
+        public Type ComponenType { get; private set; }
+
         public SystemReactor UpReactor { get; private set; }
         public SystemReactor DownReactor { get; private set; }
 
@@ -19,8 +21,9 @@ namespace Reactor.Groups
 
         public bool HasGroupOrSystems { get; private set; }
 
-        public ReactorConnection(SystemReactor upReactor, SystemReactor downReactor)
+        public ReactorConnection(Type componentType, SystemReactor upReactor, SystemReactor downReactor)
         {
+            ComponenType = componentType;
             UpReactor = upReactor;
             DownReactor = downReactor;
             GroupAccessors = upReactor.GroupAccessors.Except(downReactor.GroupAccessors).ToArray();

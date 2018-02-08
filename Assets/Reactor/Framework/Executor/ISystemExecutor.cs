@@ -16,6 +16,7 @@ namespace Reactor.Systems.Executor
 
         void RemoveSystem(ISystem system);
         void AddSystem(ISystem system);
+        SystemReactor GetOrCreateConcreteSystemReactor(IList<Type> types);
         SystemReactor GetSystemReactor(IEnumerable<IComponent> targetTypes);
         SystemReactor GetSystemReactor(HashSet<Type> targetTypes);
         void AddSystemsToEntity(IEntity entity, ISystemContainer container);
