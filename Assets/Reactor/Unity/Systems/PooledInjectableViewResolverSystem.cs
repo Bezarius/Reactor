@@ -11,7 +11,7 @@ using Zenject;
 
 namespace Reactor.Unity.Systems
 {
-    
+
     [Priority(1000)]
     public abstract class PooledInjectableViewResolverSystem : ISetupSystem
     {
@@ -25,7 +25,7 @@ namespace Reactor.Unity.Systems
         {
             get { return new Group(typeof(ViewComponent)); }
         }
-        
+
         protected PooledInjectableViewResolverSystem(IPoolManager poolManager, IEventSystem eventSystem, IInstantiator instantiator)
         {
             PoolManager = poolManager;
@@ -34,7 +34,7 @@ namespace Reactor.Unity.Systems
 
             PrefabTemplate = ResolvePrefabTemplate();
         }
-        
+
         protected abstract GameObject ResolvePrefabTemplate();
         protected abstract void RecycleView(GameObject viewToRecycle);
         protected abstract GameObject AllocateView(IEntity entity);
@@ -42,10 +42,10 @@ namespace Reactor.Unity.Systems
         public virtual void Setup(IEntity entity)
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
-            if (viewComponent.View != null) { return; }
+            if (viewComponent.GameObject != null) { return; }
 
             var viewObject = AllocateView(entity);
-            viewComponent.View = viewObject;
+            viewComponent.GameObject = viewObject;
 
             EventSystem.Receive<EntityRemovedEvent>()
                 .First(x => x.Entity == entity)

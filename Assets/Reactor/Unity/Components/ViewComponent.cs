@@ -8,6 +8,6 @@ namespace Reactor.Unity.Components
     public class ViewComponent : EntityComponent<ViewComponent>
     {
         public bool DestroyWithView;
-        public GameObject View;
+        public GameObject GameObject;
     }
 }

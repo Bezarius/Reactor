@@ -19,13 +19,13 @@ namespace Assets.Reactor.Unity.Extensions
             {
                 entity.AddComponent(new ViewComponent
                 {
-                    View = gameObject
+                    GameObject = gameObject
                 });
             }
             else
             {
                 var viewComponent = entity.GetComponent<ViewComponent>();
-                viewComponent.View = gameObject;
+                viewComponent.GameObject = gameObject;
             }
 
             var entityViewMb = gameObject.AddComponent<EntityView>();

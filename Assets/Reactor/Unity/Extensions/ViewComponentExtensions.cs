@@ -7,7 +7,7 @@ namespace Assets.Reactor.Unity.Extensions
     {
         public static void DestroyView(this ViewComponent viewComponent, float delay = 0.0f)
         {
-            Object.Destroy(viewComponent.View, delay);
+            Object.Destroy(viewComponent.GameObject, delay);
         }
     }
 }

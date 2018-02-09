@@ -12,7 +12,7 @@ namespace Reactor.Pools
     public class PoolManager : IPoolManager, IDisposable
     {
         public const string DefaultPoolName = "default";
-        
+
         private readonly IDictionary<GroupAccessorToken, IGroupAccessor> _groupAccessors;
         private readonly IDictionary<string, IPool> _pools;
 
@@ -32,7 +32,7 @@ namespace Reactor.Pools
 
             CreatePool(DefaultPoolName);
         }
-        
+
         public IPool CreatePool(string name)
         {
             var pool = PoolFactory.Create(name);
@@ -43,9 +43,20 @@ namespace Reactor.Pools
             return pool;
         }
 
-        public IPool GetPool(string name = null)
+        public IPool GetPool(string poolName = null)
         {
-            return string.IsNullOrEmpty(name) ? _pools[DefaultPoolName] : _pools[name];
+            IPool pool;
+            if (string.IsNullOrEmpty(poolName))
+            {
+                pool = _pools[DefaultPoolName];
+            }
+            else
+            {
+                if (!_pools.TryGetValue(poolName, out pool))
+                    throw new Exception(string.Format("Try access to non existing pool: '{0}'! Use CreatePool for new pool creation.", poolName));
+
+            }
+            return pool;
         }
 
         public void RemovePool(string name)
@@ -60,7 +71,7 @@ namespace Reactor.Pools
 
             EventSystem.Publish(new PoolRemovedEvent(pool));
         }
-        
+
         public IEnumerable<IEntity> GetEntitiesFor(IGroup group, string poolName = null)
         {
             if (group is EmptyGroup)
@@ -70,7 +81,15 @@ namespace Reactor.Pools
 
             if (poolName != null)
             {
-                return _pools[poolName].Entities.MatchingGroup(group);
+                IPool pool;
+                if (_pools.TryGetValue(poolName, out pool))
+                {
+                    return _pools[poolName].Entities.MatchingGroup(group);
+                }
+                else
+                {
+                    throw new Exception(string.Format("Try access to non existing pool: '{0}'! Use CreatePool for new pool creation.", poolName));
+                }
             }
 
             return Pools.GetAllEntities().MatchingGroup(group);

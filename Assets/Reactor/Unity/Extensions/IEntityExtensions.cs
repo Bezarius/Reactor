@@ -9,15 +9,15 @@ namespace Assets.Reactor.Unity.Extensions
     {
         public static T GetComponent<T>(this IEntity entity) where T : MonoBehaviour
         {
-            if(!entity.HasComponent<ViewComponent>())
+            if (!entity.HasComponent<ViewComponent>())
             { return null; }
 
             var viewComponent = entity.GetComponent<ViewComponent>();
 
-            if(!viewComponent.View)
+            if (!viewComponent.GameObject)
             { return null; }
 
-            return viewComponent.View.GetComponent<T>();
+            return viewComponent.GameObject.GetComponent<T>();
         }
 
         public static T AddComponent<T>(this IEntity entity) where T : MonoBehaviour
@@ -27,10 +27,10 @@ namespace Assets.Reactor.Unity.Extensions
 
             var viewComponent = entity.GetComponent<ViewComponent>();
 
-            if (!viewComponent.View)
+            if (!viewComponent.GameObject)
             { throw new Exception("Entity's ViewComponent has no assigned View, GameObject has been applied to the View"); }
 
-            return viewComponent.View.AddComponent<T>();
+            return viewComponent.GameObject.AddComponent<T>();
         }
     }
 }

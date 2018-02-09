@@ -5,9 +5,14 @@ using UnityEngine;
 
 // todo: add auto execution order
 
+public interface IComponentContainer
+{
+    IComponent Component { get; }
+}
+
 [Serializable]
 [DisallowMultipleComponent]
-public class ComponentWrapper<TComponent> : MonoBehaviour where TComponent : class, IComponent, new()
+public class ComponentWrapper<TComponent> : MonoBehaviour, IComponentContainer where TComponent : class, IComponent, new()
 {
     [SerializeField]
     private TComponent _component = new TComponent();

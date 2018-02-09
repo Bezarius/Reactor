@@ -5,8 +5,8 @@
         protected override void Initialize()
         {
             var view = this.Component as ViewComponent;
-            if (view != null && view.View == null)
-                view.View = this.gameObject;
+            if (view != null && view.GameObject == null)
+                view.GameObject = this.gameObject;
         }
     }
 }

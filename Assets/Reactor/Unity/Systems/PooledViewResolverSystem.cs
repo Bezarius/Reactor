@@ -56,9 +56,10 @@ namespace Reactor.Unity.Systems
         public virtual void Setup(IEntity entity)
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
-            if (viewComponent.View == null) {
+            if (viewComponent.GameObject == null)
+            {
                 var viewObject = AllocateView(entity);
-                viewComponent.View = viewObject;
+                viewComponent.GameObject = viewObject;
                 _views.Add(entity, viewObject);
             }
         }
