@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Reactor.Entities;
 using Reactor.Extensions;
-using Reactor.Groups;
 using Reactor.Pools;
 using UniRx;
 
@@ -24,18 +23,11 @@ namespace Reactor.Systems.Executor.Handlers
 
         public SubscriptionToken ProcessEntity(IEntityReactionSystem system, IEntity entity)
         {
-            var predicate = system.TargetGroup as IHasPredicate;
+            //var predicate = system.TargetGroup as IHasPredicate;
             var subscription = system.Impact(entity)
                 .Subscribe(x =>
                 {
-                    if (predicate != null && predicate.CanProcessEntity(x))
-                    {
-                        system.Reaction(x);
-                    }
-                    else
-                    {
-                        system.Reaction(x);
-                    }
+                    system.Reaction(x);
                 });
 
             return new SubscriptionToken(entity, subscription);

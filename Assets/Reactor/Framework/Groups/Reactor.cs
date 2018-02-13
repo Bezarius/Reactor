@@ -6,7 +6,6 @@ using Reactor.Entities;
 using Reactor.Extensions;
 using Reactor.Systems;
 using Reactor.Systems.Executor;
-using UnityEngine;
 
 namespace Reactor.Groups
 {
@@ -98,7 +97,6 @@ namespace Reactor.Groups
 
         public void RemoveComponent(IEntity entity, IComponent component)
         {
-            //Debug.Log(string.Format(@"RemoveComponent {0} from entity with id{1}", component.Type.Name, entity.Id));
             ReactorConnection connection;
             var typeId = component.TypeId;
             if (!_inConnectionIndex.TryGetValue(typeId, out connection))
@@ -154,10 +152,6 @@ namespace Reactor.Groups
                     connection = new ReactorConnection(component.Type, nextReactor, this);
                     _outConnectionIndex.Add(component, connection);
                     nextReactor._inConnectionIndex.Add(component, connection);
-                }
-                else
-                {
-                    Debug.Log("use existing reactor");
                 }
                 id = connection.UpReactor.GetComponentIdx(typeId);
             }

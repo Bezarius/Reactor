@@ -41,13 +41,16 @@ namespace Reactor.Unity.Installers
 
             Container.Bind<ISystemHandlerManager>().To<SystemHandlerManager>();
 
-            Container.Bind<ICoreManager>().To<CoreManager>().NonLazy();           
+            Container.Bind<ICoreManager>().To<CoreManager>().NonLazy();
 
             Container.Bind<IUnitFactory>().To<UnitFactory>().AsSingle();
+            Container.Bind<IMissileFactory>().To<MissileFactory>().AsSingle();
         }
 
         private void InitEntityComponents()
         {
+
+            // force component initialization
             var assignFrom = typeof(EntityComponent<>);
 
             var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())
@@ -62,7 +65,6 @@ namespace Reactor.Unity.Installers
                 var field = cache.GetField("TypeId", BindingFlags.Static | BindingFlags.Public);
                 var result = field.GetValue(null);
                 Debug.Log(result);
-                //cache.GetMethod("")
             }
         }
     }

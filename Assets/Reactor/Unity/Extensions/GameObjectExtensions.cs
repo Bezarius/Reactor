@@ -28,8 +28,10 @@ namespace Assets.Reactor.Unity.Extensions
                 viewComponent.GameObject = gameObject;
             }
 
-            var entityViewMb = gameObject.AddComponent<EntityView>();
-            entityViewMb.Entity = entity;
+
+            // conflict with ViewHandler
+            //var entityViewMb = gameObject.AddComponent<EntityView>();
+            //entityViewMb.Entity = entity;
         }
     }
 }

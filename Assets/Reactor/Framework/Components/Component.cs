@@ -44,15 +44,15 @@ namespace Reactor.Components
         #region Editor Stuff
 
 #if UNITY_EDITOR
-        private static readonly PropertyInfo[] _propertyInfos = _type
-            .GetProperties()
+        private static readonly FieldInfo[] _fieldInfos = _type
+            .GetFields()
             .Where(prop => !Attribute.IsDefined(prop, typeof(HideInInspector)))
             .ToArray();
 
         [JsonIgnore]
-        public PropertyInfo[] PropertyInfos
+        public FieldInfo[] FieldInfos
         {
-            get { return _propertyInfos; }
+            get { return _fieldInfos; }
         }
 
         [HideInInspector]

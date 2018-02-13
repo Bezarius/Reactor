@@ -179,6 +179,7 @@ namespace Reactor.Entities
                 }
                 _reactor.RemoveComponent(this, component);
                 _components.RemoveAt(idx);
+                OnRemoveComponent.Execute(component);
             }
         }
 

@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(ComponentWrapper<>), true)]
+[CustomEditor(typeof(ComponentWrapper<>), true), CanEditMultipleObjects]
 public class ComponentWrapperEditor : Editor
 {
     public override void OnInspectorGUI()

@@ -3,6 +3,7 @@ using Reactor.Entities;
 
 namespace Reactor.Events
 {
+    /*
     public class ComponentRemovedEvent
     {
         public IEntity Entity { get; private set; }
@@ -13,5 +14,5 @@ namespace Reactor.Events
             Entity = entity;
             Component = component;
         }
-    }
+    }*/
 }

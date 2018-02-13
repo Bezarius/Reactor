@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using Reactor.Entities;
 using Reactor.Events;
 using Reactor.Pools;
 using Reactor.Unity.Components;
 using Reactor.Unity.MonoBehaviours;
-using UniRx;
-using UniRx.Triggers;
 using UnityEngine;
 using Zenject;
 using Object = UnityEngine.Object;
@@ -19,31 +16,11 @@ namespace Reactor.Unity.Systems
         public IEventSystem EventSystem { get; private set; }
         public IInstantiator Instantiator { get; private set; }
 
-        private readonly Dictionary<IEntity, IDisposable> _subscriptionsDictionary = new Dictionary<IEntity, IDisposable>();
-
         protected ViewHandler(IPoolManager poolManager, IEventSystem eventSystem, IInstantiator instantiator)
         {
             PoolManager = poolManager;
             EventSystem = eventSystem;
             Instantiator = instantiator;
-
-            // todo: add clear
-            EventSystem.Receive<ComponentRemovedEvent>()
-                .Where(x => x.Component is ViewComponent)
-                .Subscribe(x =>
-                {
-                    IDisposable viewSubscription;
-                    if (_subscriptionsDictionary.TryGetValue(x.Entity, out viewSubscription))
-                    {
-                        if (viewSubscription != null)
-                        {
-                            viewSubscription.Dispose();
-                        }
-                        var view = (x.Component as ViewComponent).GameObject;
-                        if (view != null)
-                            DestroyView(view);
-                    }
-                });
         }
 
         public virtual GameObject InstantiateAndInject(GameObject prefab,
@@ -63,34 +40,20 @@ namespace Reactor.Unity.Systems
 
         public virtual void SetupView(IEntity entity, Func<IEntity, GameObject> viewResolver)
         {
-            ViewComponent viewComponent;
-            try
+            var viewComponent = entity.GetComponent<ViewComponent>();
+
+            // check if ViewCmponent.GameObject is already initialized by ViewComponentWrapper
+            if (viewComponent.GameObject == null)
             {
-                viewComponent = entity.GetComponent<ViewComponent>();
-                if (viewComponent.GameObject != null) { return; }
-            }
-            catch (Exception e)
-            {
-                throw e;
+                var viewObject = viewResolver(entity);
+                viewComponent.GameObject = viewObject;
             }
 
-            var viewObject = viewResolver(entity);
-            viewComponent.GameObject = viewObject;
-
-            var entityBinding = viewObject.GetComponent<EntityView>();
-            if (entityBinding == null)
+            var entitiView = viewComponent.GameObject.GetComponent<EntityView>();
+            if (entitiView == null)
             {
-                entityBinding = viewObject.AddComponent<EntityView>();
-                entityBinding.Entity = entity;
-            }
-
-            if (viewComponent.DestroyWithView)
-            {
-                var viewSubscription = viewObject.OnDestroyAsObservable()
-                    .Subscribe(x => entityBinding.Entity.Pool.RemoveEntity(entity))
-                    .AddTo(viewObject);
-
-                _subscriptionsDictionary.Add(entity, viewSubscription);
+                entitiView = viewComponent.GameObject.AddComponent<EntityView>();
+                entitiView.Entity = entity;
             }
         }
     }

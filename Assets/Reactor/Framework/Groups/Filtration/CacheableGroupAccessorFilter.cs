@@ -39,6 +39,8 @@ namespace Assets.Reactor.Framework.Groups.Filtration
         }
 
         public void Dispose()
-        { _triggerSubscription.Dispose(); }
+        {
+            _triggerSubscription.Dispose();
+        }
     }
 }

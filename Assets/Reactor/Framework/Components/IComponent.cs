@@ -10,7 +10,7 @@ namespace Reactor.Components
         Type WrapperType { get; }
 
 #if UNITY_EDITOR
-        PropertyInfo[] PropertyInfos { get; }
+        FieldInfo[] FieldInfos { get; }
         bool IsCollapsed { get; set; }
 #endif
     }
