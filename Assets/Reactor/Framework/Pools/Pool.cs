@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.Game.Components;
 using Reactor.Blueprints;
 using Reactor.Components;
 using Reactor.Entities;
@@ -19,7 +18,7 @@ namespace Reactor.Pools
         private readonly HashSet<IEntity> _entities;
 
         public string Name { get; private set; }
-        public IEnumerable<IEntity> Entities { get { return _entities;} }
+        public IEnumerable<IEntity> Entities { get { return _entities; } }
         public IEventSystem EventSystem { get; private set; }
         public IEntityFactory EntityFactory { get; private set; }
 
@@ -36,9 +35,10 @@ namespace Reactor.Pools
             EntityFactory = entityFactory;
         }
 
-        public IEntity BuildEntity<T>(T blueprint) where T : class, IBlueprint
+        //todo: строить без использования финального реактора, а использовать постепенное построение, что бы избежать необходимость установки очередности с помощью приоритетов
+        public IEntity BuildEntity<T>(T blueprint, Action<IEntity> preSetup = null) where T : class, IBlueprint
         {
-            Assert.IsNotNull(blueprint);
+            Assert.IsNotNull(blueprint, "blueprint != null");
 
             var type = typeof(T);
             var components = blueprint.Build().ToList();
@@ -53,10 +53,10 @@ namespace Reactor.Pools
                     hs.Add(component.GetType());
                 }
                 // todo: находит реактор, у которого индекс не совпадает с сущностью
-                reactor = _executor.GetSystemReactor(hs);  
+                reactor = _executor.GetSystemReactor(hs);
             }
 
-            Assert.IsNotNull(reactor);
+            Assert.IsNotNull(reactor, "reactor != null");
 
             var sortedComponents = new IComponent[components.Count];
             foreach (var component in components)
@@ -67,6 +67,9 @@ namespace Reactor.Pools
             var entity = EntityFactory.Create(this, _indexPool.GetId(), sortedComponents, reactor);
 
             _entities.Add(entity);
+
+            if (preSetup != null)
+                preSetup(entity);
 
             reactor.AddEntityToReactor(entity);
 
@@ -81,7 +84,7 @@ namespace Reactor.Pools
 
             SystemReactor reactor = _executor.GetSystemReactor(components);
 
-            Assert.IsNotNull(reactor);
+            Assert.IsNotNull(reactor, "reactor != null");
 
             var entity = EntityFactory.Create(this, _indexPool.GetId(), components, reactor);
 
@@ -98,7 +101,7 @@ namespace Reactor.Pools
         {
             SystemReactor reactor = _executor.GetSystemReactor(components);
 
-            Assert.IsNotNull(reactor);
+            Assert.IsNotNull(reactor, "reactor != null");
 
             var sortedComponents = new IComponent[components.Count()];
             foreach (var component in components)
@@ -119,6 +122,9 @@ namespace Reactor.Pools
 
         public void RemoveEntity(IEntity entity)
         {
+            if(entity.Pool != this)
+                throw new Exception("An incorrect pool was used to delete the entity!");
+
             _entities.Remove(entity);
             _indexPool.Release(entity.Id);
             entity.Dispose();

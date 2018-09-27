@@ -6,7 +6,6 @@ using Reactor.Components;
 using Reactor.Groups;
 using Reactor.Pools;
 using UniRx;
-using UnityEngine;
 
 namespace Reactor.Entities
 {
@@ -85,11 +84,15 @@ namespace Reactor.Entities
         public IPool Pool { get; private set; }
         public IEnumerable<IComponent> Components { get { return _components; } }
 
+        // todo: подумать как можно реализовать этот функционал более корректным способом
+        // это удобная, но не самая лучшая реализация, т.к. команды могут быть вызваны вне сущности,
+        // а это может привести к некорректному поведению EntityView и других потребителей данного функционала
+        // Замена нужна реактивная, т.к. не реактивная реализация будет мотивировать на смешивание стилей 
         private readonly ReactiveCommand<IComponent> _addComponentSubject = new ReactiveCommand<IComponent>();
-        public ReactiveCommand<IComponent> OnAddComponent { get { return _addComponentSubject; } }
+        public IReactiveCommand<IComponent> OnAddComponent { get { return _addComponentSubject; } }
 
         private readonly ReactiveCommand<IComponent> _removeComponentSubject = new ReactiveCommand<IComponent>();
-        public ReactiveCommand<IComponent> OnRemoveComponent { get { return _removeComponentSubject; } }
+        public IReactiveCommand<IComponent> OnRemoveComponent { get { return _removeComponentSubject; } }
 
         private SystemReactor _reactor;
         private readonly List<IComponent> _components;
@@ -142,6 +145,14 @@ namespace Reactor.Entities
                 var component = _components[idx];
                 _reactor.RemoveComponent(this, component);
                 _components.RemoveAt(idx);
+
+                var disposable = component as IDisposable;
+
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+
                 OnRemoveComponent.Execute(component);
             }
         }
@@ -150,36 +161,49 @@ namespace Reactor.Entities
         {
             var typeId = TypeCache<T>.TypeId;
             var idx = _reactor.GetComponentIdx(typeId);
+
             if (_components.Count > idx && idx >= 0 && _components[idx] != null)
             {
                 _components.RemoveAt(idx);
             }
+
+            var disposable = component as IDisposable;
+
+            if (disposable != null)
+            {
+                disposable.Dispose();
+            }
+
             _reactor.RemoveComponent(this, component);
             OnRemoveComponent.Execute(component);
         }
 
         private void RemoveComponents(IEnumerable<IComponent> components)
         {
-            components = components.ToArray();
-            foreach (var component in components.Where(x => x != null))
+            var componentArray = components.ToArray();
+            for (int i = 0; i < componentArray.Length; i++)
             {
-                var typeId = component.TypeId;
-                var idx = _reactor.GetComponentIdx(typeId);
-
-                if (idx >= 0 && idx > _components.Count || _components[idx] == null)
+                var component = componentArray[i];
+                if (component != null)
                 {
-                    continue;
-                }
+                    var typeId = component.TypeId;
+                    var idx = _reactor.GetComponentIdx(typeId);
 
-                var disposable = component as IDisposable;
+                    if (idx >= 0 && idx > _components.Count || _components[idx] == null)
+                    {
+                        continue;
+                    }
 
-                if (disposable != null)
-                {
-                    disposable.Dispose();
+                    var disposable = component as IDisposable;
+
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
+                    _reactor.RemoveComponent(this, component);
+                    _components.RemoveAt(idx);
+                    OnRemoveComponent.Execute(component);
                 }
-                _reactor.RemoveComponent(this, component);
-                _components.RemoveAt(idx);
-                OnRemoveComponent.Execute(component);
             }
         }
 
@@ -197,13 +221,23 @@ namespace Reactor.Entities
         public bool HasComponent<T>() where T : class, IComponent
         {
             var typeId = TypeCache<T>.TypeId;
-            var idx = _reactor.GetComponentIdx(typeId);
-            return idx >= 0 && _components.Count > idx && _components[idx] != null;
+            return _reactor.HasComponentIndex(typeId); // && _components[idx] != null;
         }
 
         public bool HasComponents(params Type[] componentTypes)
         {
-            return _components.Count > 0 && componentTypes.All(x => _components[_reactor.GetComponentIdx(TypeHelper.GetTypeId(x))] != null);
+            if (_components.Count > 0)
+            {
+                for (var i = 0; i < componentTypes.Length; i++)
+                {
+                    var type = componentTypes[i];
+                    var typeId = TypeHelper.GetTypeId(type);
+                    var idx = _reactor.GetComponentIdx(typeId);
+                    if (idx == -1)
+                        return false;
+                }
+            }
+            return true;
         }
 
 
@@ -214,7 +248,7 @@ namespace Reactor.Entities
             //Assert.IsTrue(_components.ContainsKey(type), string.Format(@"Entity with id: '{0}', doesn't contain '{1}' component", this.Id, type.Name));
             var typeId = TypeCache<T>.TypeId;
             var idx = _reactor.GetComponentIdx(typeId);
-            if (idx >= 0)
+            if (idx >= 0) //todo: try optimize because every check slowdown system
                 return _components[idx] as T;
             return null;
         }
@@ -222,8 +256,6 @@ namespace Reactor.Entities
         public void Dispose()
         {
             RemoveAllComponents();
-            OnAddComponent.Dispose();
-            OnRemoveComponent.Dispose();
         }
     }
 }

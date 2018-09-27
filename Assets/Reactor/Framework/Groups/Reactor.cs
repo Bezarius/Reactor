@@ -116,8 +116,10 @@ namespace Reactor.Groups
         {
             // add to this
             var groupAccessors = GroupAccessors;
-            Array.Resize(ref groupAccessors, GroupAccessors.Length + 1);
-            GroupAccessors[GroupAccessors.Length] = groupAccessor;
+            var gaLen = GroupAccessors.Length;
+            Array.Resize(ref groupAccessors, gaLen + 1);
+            GroupAccessors = groupAccessors;
+            GroupAccessors[gaLen] = groupAccessor;
 
             // check actual connections
             foreach (var type in groupAccessor.AccessorToken.ComponentTypes)
@@ -134,6 +136,11 @@ namespace Reactor.Groups
         public int GetComponentIdx(int componentId)
         {
             return _componentIndex.GetTypeIndex(componentId);
+        }
+
+        public bool HasComponentIndex(int componentId)
+        {
+            return _componentIndex.HasIndex(componentId);
         }
 
         public int GetFutureComponentIdx(IComponent component)

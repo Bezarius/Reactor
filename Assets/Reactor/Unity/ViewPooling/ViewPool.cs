@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Reactor.Extensions;
+using Reactor.Unity.MonoBehaviours;
 using UnityEngine;
 
 namespace Assets.Reactor.Unity.ViewPooling
@@ -11,6 +12,7 @@ namespace Assets.Reactor.Unity.ViewPooling
 
         public GameObject Prefab { get; private set; }
         public int IncrementSize { get; private set; }
+
 
         public ViewPool(GameObject prefab, int incrementSize = 5)
         {
@@ -24,6 +26,7 @@ namespace Assets.Reactor.Unity.ViewPooling
             {
                 var newInstance = Object.Instantiate(Prefab);
                 newInstance.SetActive(false);
+                newInstance.AddComponent<EntityView>(); // todo: add prebuild with component option
                 _pooledObjects.Push(newInstance);
             }
         }

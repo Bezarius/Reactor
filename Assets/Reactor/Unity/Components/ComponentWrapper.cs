@@ -3,17 +3,19 @@ using Reactor.Components;
 using Reactor.Unity.MonoBehaviours;
 using UnityEngine;
 
-// todo: add auto execution order
-
 public interface IComponentContainer
 {
+    void Setup();
     IComponent Component { get; }
 }
+
 
 [Serializable]
 [DisallowMultipleComponent]
 public class ComponentWrapper<TComponent> : MonoBehaviour, IComponentContainer where TComponent : class, IComponent, new()
 {
+    private bool _isApplicationQuitting = false;
+
     [SerializeField]
     private TComponent _component = new TComponent();
 
@@ -23,9 +25,7 @@ public class ComponentWrapper<TComponent> : MonoBehaviour, IComponentContainer w
         set { _component = (TComponent)value; }
     }
 
-    protected virtual void Initialize() { }
-
-    private void OnEnable()
+    public void Setup()
     {
         EntityView view = GetComponent<EntityView>();
         if (view && view.Entity != null)
@@ -34,17 +34,28 @@ public class ComponentWrapper<TComponent> : MonoBehaviour, IComponentContainer w
                 view.Entity.AddComponent(_component);
             else
                 _component = view.Entity.GetComponent<TComponent>();
-            Initialize();
         }
+        Initialize();
+    }
+
+
+    protected virtual void Initialize()
+    {
     }
 
     private void OnDisable()
     {
         EntityView view = GetComponent<EntityView>();
-        if (view)
+        if (view && !_isApplicationQuitting)
         {
             if (view.Entity != null && view.Entity.HasComponent<TComponent>())
                 view.Entity.RemoveComponent<TComponent>();
+            _component = null;
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        _isApplicationQuitting = true;
     }
 }

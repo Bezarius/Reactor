@@ -14,7 +14,6 @@ namespace Reactor.Systems.Executor.Handlers
 
         public SubscriptionToken Setup(IGroupReactionSystem system)
         {
-            //var hasEntityPredicate = system.TargetGroup is IHasPredicate;
             var groupAccessor = PoolManager.CreateGroupAccessor(system.TargetGroup);
             var subscription = system.Impact(groupAccessor)
                 .Subscribe(accessor =>
@@ -23,23 +22,6 @@ namespace Reactor.Systems.Executor.Handlers
                     {
                         system.Reaction(entity);
                     }
-                    /*
-                    var entities = accessor.Entities.ToList();
-                    var entityCount = entities.Count - 1;
-                    for (var i = entityCount; i >= 0; i--)
-                    {
-                        if (hasEntityPredicate)
-                        {
-                            var groupPredicate = system.TargetGroup as IHasPredicate;
-                            if (groupPredicate.CanProcessEntity(entities[i]))
-                            {
-                                system.Reaction(entities[i]);
-                            }
-                            return;
-                        }
-
-                        system.Reaction(entities[i]);
-                    }*/
                 });
 
             return new SubscriptionToken(null, subscription);

@@ -15,7 +15,6 @@ namespace Reactor.Unity
     {
         public ISystemExecutor SystemExecutor { get; private set; }
 
-        [Inject]
         public IPoolManager PoolManager { get; private set; }
 
         protected List<IReactorPlugin> Plugins { get; private set; }

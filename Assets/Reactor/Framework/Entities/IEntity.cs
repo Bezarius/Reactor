@@ -27,7 +27,7 @@ namespace Reactor.Entities
         bool HasComponent<T>() where T : class, IComponent;
         bool HasComponents(params Type[] component);
 
-        ReactiveCommand<IComponent> OnAddComponent { get; }
-        ReactiveCommand<IComponent> OnRemoveComponent { get; }
+        IReactiveCommand<IComponent> OnAddComponent { get; }
+        IReactiveCommand<IComponent> OnRemoveComponent { get; }
     }
 }

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Reactor.Components;
-using Reactor.Entities;
 
 namespace Reactor.Groups
 {
     public class GroupBuilder
     {
         private List<Type> _components;
-        private Predicate<IEntity> _predicate;
 
         public GroupBuilder()
         {
@@ -27,13 +25,10 @@ namespace Reactor.Groups
             return this;
         }
 
-        public GroupBuilder WithPredicate(Predicate<IEntity> predicate)
-        {
-            _predicate = predicate;
-            return this;
-        }
 
         public IGroup Build()
-        { return new Group(_components.ToArray()); }
+        {
+            return new Group(_components.ToArray());
+        }
     }
 }

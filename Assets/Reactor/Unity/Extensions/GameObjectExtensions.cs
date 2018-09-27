@@ -30,8 +30,11 @@ namespace Assets.Reactor.Unity.Extensions
 
 
             // conflict with ViewHandler
-            //var entityViewMb = gameObject.AddComponent<EntityView>();
-            //entityViewMb.Entity = entity;
+            if (gameObject.GetComponent<EntityView>() == null)
+            {
+                var entityViewMb = gameObject.AddComponent<EntityView>();
+                entityViewMb.Entity = entity;
+            }
         }
     }
 }

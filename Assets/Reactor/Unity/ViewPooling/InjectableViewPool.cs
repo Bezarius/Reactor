@@ -53,7 +53,7 @@ namespace Assets.Reactor.Unity.ViewPooling
             availableGameObject.SetActive(true);
             return availableGameObject;
         }
-        
+
         public void ReleaseInstance(GameObject instance)
         {
             _pooledObjects.Push(instance);

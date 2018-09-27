@@ -51,7 +51,7 @@ namespace Reactor.Groups
 
         public int GetTypeIndex(int typeId)
         {
-            if (typeId < _componentIdx.Length)
+            if (typeId < _componentIdx.Length) //todo: try optimize because every check slowdown system
                 return _componentIdx[typeId];
             return -1;
         }

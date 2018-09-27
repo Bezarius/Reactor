@@ -5,5 +5,5 @@ using Reactor.Pools;
 
 namespace Reactor.Entities
 {
-    public interface IEntityFactory : Zenject.IFactory<IPool, int, IEnumerable<IComponent>, SystemReactor,IEntity> {}
+    public interface IEntityFactory : Zenject.IFactory<IPool, int, IEnumerable<IComponent>, SystemReactor, IEntity> { }
 }

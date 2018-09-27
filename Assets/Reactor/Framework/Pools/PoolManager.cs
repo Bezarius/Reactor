@@ -5,7 +5,7 @@ using Reactor.Entities;
 using Reactor.Events;
 using Reactor.Extensions;
 using Reactor.Groups;
-using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Reactor.Pools
 {
@@ -53,7 +53,8 @@ namespace Reactor.Pools
             else
             {
                 if (!_pools.TryGetValue(poolName, out pool))
-                    throw new Exception(string.Format("Try access to non existing pool: '{0}'! Use CreatePool for new pool creation.", poolName));
+                    pool = CreatePool(poolName);
+                    //throw new Exception(string.Format("Try access to non existing pool: '{0}'! Use CreatePool for new pool creation.", poolName));
 
             }
             return pool;
@@ -78,25 +79,16 @@ namespace Reactor.Pools
             {
                 return new IEntity[0];
             }
+            var result = this.GetPool(poolName).Entities.MatchingGroup(group);
 
-            if (poolName != null)
-            {
-                IPool pool;
-                if (_pools.TryGetValue(poolName, out pool))
-                {
-                    return _pools[poolName].Entities.MatchingGroup(group);
-                }
-                else
-                {
-                    throw new Exception(string.Format("Try access to non existing pool: '{0}'! Use CreatePool for new pool creation.", poolName));
-                }
-            }
-
-            return Pools.GetAllEntities().MatchingGroup(group);
+            return result;
         }
 
-        public IGroupAccessor CreateGroupAccessor(IGroup group, string poolName = null)
+        public IGroupAccessor CreateGroupAccessor(IGroup group, string poolName)
         {
+            if (string.IsNullOrEmpty(poolName))
+                poolName = DefaultPoolName;
+
             var groupAccessorToken = new GroupAccessorToken(group.TargettedComponents.ToArray(), poolName);
             if (_groupAccessors.ContainsKey(groupAccessorToken))
             {
@@ -109,11 +101,10 @@ namespace Reactor.Pools
                 GroupAccessorToken = groupAccessorToken,
                 InitialEntities = entityMatches
             });
+#if UNITY_EDITOR
 
-            if (groupAccessorToken.ComponentTypes.Length == 0)
-            {
-                Debug.Log("упс!");
-            }
+            Assert.IsFalse(groupAccessorToken.ComponentTypes.Length == 0, "groupAccessorToken.ComponentTypes.Length == 0");
+#endif
             _groupAccessors.Add(groupAccessorToken, groupAccessor);
 
             EventSystem.Publish(new GroupAccessorAddedEvent(groupAccessorToken, groupAccessor));

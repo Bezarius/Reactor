@@ -62,6 +62,8 @@ namespace Reactor.Systems.Executor
         private SystemReactor _emptyReactor;
         private ICoreManager _coreManager;
 
+        private bool _isDispising = false;
+
         public SystemReactor EmptyReactor
         {
             get { return _emptyReactor ?? (_emptyReactor = new SystemReactor(this, new HashSet<Type>())); }
@@ -181,17 +183,19 @@ namespace Reactor.Systems.Executor
             if (reactor == null)
             {
                 reactor = new SystemReactor(this, new HashSet<Type>(types));
+                /*
                 string typeNames = reactor.TargetTypesList.Select(x => x.Name).Aggregate(string.Empty,
-                    (current, typeName) => current + string.Format("{0}; ", typeName));
+                    (current, typeName) => current + string.Format("{0}; ", typeName));*/
                 //Debug.Log(string.Format("created new reactor with types: {0}", typeNames));
                 _systemReactors.Add(reactor);
             }
+            /*
             else
             {
                 string typeNames = reactor.TargetTypesList.Select(x => x.Name).Aggregate(string.Empty,
                     (current, typeName) => current + string.Format("{0}; ", typeName));
                 //Debug.Log(string.Format("Using existing reactor  with types: {0}", typeNames));
-            }
+            }*/
             return reactor;
         }
 
@@ -241,40 +245,48 @@ namespace Reactor.Systems.Executor
         {
             if (container.HasGroupOrSystems)
             {
-                for (int i = 0; i < container.SetupSystems.Length; i++)
+                try
                 {
-                    var system = container.SetupSystems[i];
-                    var subscription = HandlerManager.SetupSystemHandler.ProcessEntity(system, entity);
-                    if (subscription != null)
+                    for (int i = 0; i < container.SetupSystems.Length; i++)
                     {
-                        _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                        var system = container.SetupSystems[i];
+                        var subscription = HandlerManager.SetupSystemHandler.ProcessEntity(system, entity);
+                        if (subscription != null)
+                        {
+                            _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                        }
+                    }
+
+                    for (int i = 0; i < container.EntityReactionSystems.Length; i++)
+                    {
+                        var system = container.EntityReactionSystems[i];
+                        var subscription = HandlerManager.EntityReactionSystemHandler.ProcessEntity(system, entity);
+                        if (subscription != null)
+                        {
+                            _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                        }
+                    }
+
+                    for (int i = 0; i < container.InteractReactionSystems.Length; i++)
+                    {
+                        var system = container.InteractReactionSystems[i];
+                        var subscription = HandlerManager.InteractReactionSystemHandler.ProcessEntity(system, entity);
+                        if (subscription != null)
+                        {
+                            _entitySubscribtionsOnSystems[system].Add(entity, subscription);
+                        }
+                    }
+
+                    for (int i = 0; i < container.GroupAccessors.Length; i++)
+                    {
+                        var accessor = container.GroupAccessors[i];
+                        if (accessor.AccessorToken.Pool.Equals(entity.Pool.Name, StringComparison.Ordinal))
+                            accessor.AddEntity(entity);
                     }
                 }
-
-                for (int i = 0; i < container.EntityReactionSystems.Length; i++)
+                catch (Exception e)
                 {
-                    var system = container.EntityReactionSystems[i];
-                    var subscription = HandlerManager.EntityReactionSystemHandler.ProcessEntity(system, entity);
-                    if (subscription != null)
-                    {
-                        _entitySubscribtionsOnSystems[system].Add(entity, subscription);
-                    }
-                }
-
-                for (int i = 0; i < container.InteractReactionSystems.Length; i++)
-                {
-                    var system = container.InteractReactionSystems[i];
-                    var subscription = HandlerManager.InteractReactionSystemHandler.ProcessEntity(system, entity);
-                    if (subscription != null)
-                    {
-                        _entitySubscribtionsOnSystems[system].Add(entity, subscription);
-                    }
-                }
-
-                for (int i = 0; i < container.GroupAccessors.Length; i++)
-                {
-                    var accessor = container.GroupAccessors[i];
-                    accessor.AddEntity(entity);
+                    Debug.LogError(e);
                 }
             }
         }
@@ -295,7 +307,7 @@ namespace Reactor.Systems.Executor
 
         public void RemoveSystemsFromEntity(IEntity entity, ISystemContainer container)
         {
-            if (container.HasGroupOrSystems)
+            if (container.HasGroupOrSystems && !_isDispising)
             {
                 for (int i = 0; i < container.TeardownSystems.Length; i++)
                 {
@@ -338,6 +350,7 @@ namespace Reactor.Systems.Executor
 
         public void Dispose()
         {
+            _isDispising = true;
             _entitySubscribtionsOnSystems.ForEachRun(x => x.Value.Values.DisposeAll());
             _eventSubscriptions.DisposeAll();
         }

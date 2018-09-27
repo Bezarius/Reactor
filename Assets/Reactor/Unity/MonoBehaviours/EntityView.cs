@@ -15,12 +15,18 @@ namespace Reactor.Unity.MonoBehaviours
     [Serializable]
     public class EntityView : MonoBehaviour, IEntityView
     {
+#if UNITY_EDITOR
+        public bool SystemInfoIsCollapsed { get; set; }
+#endif
+
         [SerializeField]
         private string _poolName;
 
         private readonly CompositeDisposable _compositeDisposable = new CompositeDisposable();
         private IEntity _entity;
         private bool _monitorEnabled;
+
+        public readonly IReactiveCommand<IEntity> OnEntityUpdate = new ReactiveCommand<IEntity>();
 
         public IEntity Entity
         {
@@ -33,7 +39,14 @@ namespace Reactor.Unity.MonoBehaviours
                 StopComponentMonitor();
                 _entity = value;
                 StartComponentMonitor();
+                OnEntityUpdate.Execute(_entity);
             }
+        }
+
+        private void Awake()
+        {
+            if (!this.gameObject.IsEntity())
+                this.gameObject.SetEntityTag();
         }
 
         private void OnEnable()
@@ -47,34 +60,48 @@ namespace Reactor.Unity.MonoBehaviours
             StopComponentMonitor();
         }
 
+        private void AddOrEnableWrapper(Type wrapperType)
+        {
+            var wrapper = this.gameObject.GetComponent(wrapperType) as MonoBehaviour;
+            if (wrapper == null)
+                wrapper = this.gameObject.AddComponent(wrapperType) as MonoBehaviour;
+            if (wrapper.enabled == false)
+                wrapper.enabled = true;
+            var wrapperSetup = wrapper as IComponentContainer;
+            if (wrapperSetup != null)
+                wrapperSetup.Setup();
+
+        }
+
+        private void DisableWrapper(Type wrapperType)
+        {
+            var wrapper = this.gameObject.GetComponent(wrapperType) as MonoBehaviour;
+            if (wrapper != null)
+                wrapper.enabled = false;
+        }
+
         private void StartComponentMonitor()
         {
-            _monitorEnabled = true;
-            foreach (var component in Entity.Components)
+            if (_entity != null)
             {
-                if (component != null && component.WrapperType != null && this.gameObject.GetComponent(component.WrapperType) == null)
+                _monitorEnabled = true;
+                foreach (var component in Entity.Components)
                 {
-                    this.gameObject.AddComponent(component.WrapperType);
+                    if (component != null && component.WrapperType != null)
+                        AddOrEnableWrapper(component.WrapperType);
                 }
-            }
-            Entity.OnAddComponent.Subscribe(component =>
-            {
-                if (component.WrapperType != null)
+                Entity.OnAddComponent.Subscribe(component =>
                 {
-                    if (this.gameObject.GetComponent(component.WrapperType) == null)
-                        this.gameObject.AddComponent(component.WrapperType);
-                }
-            }).AddTo(_compositeDisposable);
+                    if (component.WrapperType != null)
+                        AddOrEnableWrapper(component.WrapperType);
+                }).AddTo(_compositeDisposable);
 
-            Entity.OnRemoveComponent.Subscribe(component =>
-            {
-                if (component.WrapperType != null)
+                Entity.OnRemoveComponent.Subscribe(component =>
                 {
-                    var wrapper = this.gameObject.GetComponent(component.WrapperType);
-                    if (wrapper != null)
-                        Destroy(wrapper);
-                }
-            }).AddTo(_compositeDisposable);
+                    if (component.WrapperType != null)
+                        DisableWrapper(component.WrapperType);
+                }).AddTo(_compositeDisposable);
+            }
         }
 
         private void StopComponentMonitor()
@@ -85,13 +112,19 @@ namespace Reactor.Unity.MonoBehaviours
                     .Where(x => x.GetType().IsAssignableFrom(typeof(IComponent)))
                     .ToList();
                 foreach (MonoBehaviour component in components)
-                {
                     component.enabled = false;
-                }
+
                 if (_compositeDisposable.Count > 0)
                     _compositeDisposable.Dispose();
                 _monitorEnabled = false;
             }
+        }
+
+        private void OnDestroy()
+        {
+            if (Entity != null)
+                Entity.Pool.RemoveEntity(this.Entity);
+            this.gameObject.SetActive(false);
         }
     }
 }

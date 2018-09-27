@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51928d8e3f9947c448c5b87b67199e6e, type: 3}
+  m_Name: 5d294a9e-1c91-4d0b-88ec-db272f3e7d38
+  m_EditorClassIdentifier: 
+  _state: "[\r\n  {\r\n    \"$type\": \"Assets.Game.Components.HealthComponent, Assembly-CSharp\",\r\n
+    \   \"InitialHealth\": 250,\r\n    \"Armor\": 0.0,\r\n    \"ArmorType\": 3,\r\n
+    \   \"Health\": {\r\n      \"Value\": 0,\r\n      \"HasValue\": true\r\n    },\r\n
+    \   \"RegenPerSecond\": 0,\r\n    \"TypeId\": 26,\r\n    \"Type\": \"Assets.Game.Components.HealthComponent,
+    Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n
+    \   \"IsCollapsed\": true\r\n  },\r\n  {\r\n    \"$type\": \"Assets.Game.Components.MovementComponent,
+    Assembly-CSharp\",\r\n    \"MovementType\": 1,\r\n    \"Speed\": {\r\n      \"Value\":
+    3.0,\r\n      \"HasValue\": true\r\n    },\r\n    \"TurningSpeed\": 5.0,\r\n    \"PhysicalSize\":
+    1.5,\r\n    \"TypeId\": 34,\r\n    \"Type\": \"Assets.Game.Components.MovementComponent,
+    Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n
+    \   \"IsCollapsed\": true\r\n  },\r\n  {\r\n    \"$type\": \"Assets.Game.Components.PositionTrackComponent,
+    Assembly-CSharp\",\r\n    \"OldPosition\": {\r\n      \"x\": 0.0,\r\n      \"y\":
+    0.0,\r\n      \"z\": 0.0\r\n    },\r\n    \"TypeId\": 41,\r\n    \"Type\": \"Assets.Game.Components.PositionTrackComponent,
+    Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n
+    \   \"IsCollapsed\": false\r\n  },\r\n  {\r\n    \"$type\": \"Assets.Game.Components.AIComponent,
+    Assembly-CSharp\",\r\n    \"SenseRadius\": 30.0,\r\n    \"CurrentState\": {\r\n
+    \     \"Value\": 0,\r\n      \"HasValue\": true\r\n    },\r\n    \"CurrentTarget\":
+    {\r\n      \"HasValue\": true\r\n    },\r\n    \"IsGuard\": false,\r\n    \"GuardPosition\":
+    {\r\n      \"x\": 0.0,\r\n      \"y\": 0.0,\r\n      \"z\": 0.0\r\n    },\r\n
+    \   \"Enabled\": true,\r\n    \"TypeId\": 3,\r\n    \"Type\": \"Assets.Game.Components.AIComponent,
+    Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n
+    \   \"IsCollapsed\": true\r\n  },\r\n  {\r\n    \"$type\": \"Assets.Game.Components.AnimationComponent,
+    Assembly-CSharp\",\r\n    \"Speed\": 1.0,\r\n    \"AttackVariation\": 1.0,\r\n
+    \   \"AnimationEvent\": {\r\n      \"Value\": 0,\r\n      \"HasValue\": true\r\n
+    \   },\r\n    \"TypeId\": 4,\r\n    \"Type\": \"Assets.Game.Components.AnimationComponent,
+    Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n
+    \   \"WrapperType\": \"Assets.Game.Components.AnimationComponentWrapper, Assembly-CSharp,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n    \"IsCollapsed\":
+    true\r\n  },\r\n  {\r\n    \"$type\": \"Assets.Game.Components.AttackComponent,
+    Assembly-CSharp\",\r\n    \"AttackType\": 0,\r\n    \"WeaponType\": 0,\r\n    \"DamageType\":
+    0,\r\n    \"MinPower\": 50,\r\n    \"MaxPower\": 75,\r\n    \"Range\": 0.95,\r\n
+    \   \"Angle\": 15.0,\r\n    \"Speed\": {\r\n      \"Value\": 1.9,\r\n      \"HasValue\":
+    true\r\n    },\r\n    \"Ranged\": false,\r\n    \"MissileType\": 0,\r\n    \"WithAim\":
+    false,\r\n    \"Disabled\": false,\r\n    \"TypeId\": 60,\r\n    \"Type\": \"Assets.Game.Components.AttackComponent,
+    Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n
+    \   \"IsCollapsed\": true\r\n  },\r\n  {\r\n    \"$type\": \"Assets.Game.Components.OwnerComponent,
+    Assembly-CSharp\",\r\n    \"PlayerGroup\": 1,\r\n    \"TypeId\": 35,\r\n    \"Type\":
+    \"Assets.Game.Components.OwnerComponent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null\",\r\n    \"IsCollapsed\": true\r\n  },\r\n  {\r\n    \"$type\":
+    \"Assets.Game.Components.SoundsComponent, Assembly-CSharp\",\r\n    \"AttackSoundSet\":
+    1,\r\n    \"WalkSoundSet\": 4,\r\n    \"DeathSoundSet\": 3,\r\n    \"TypeId\":
+    49,\r\n    \"Type\": \"Assets.Game.Components.SoundsComponent, Assembly-CSharp,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n    \"IsCollapsed\":
+    true\r\n  },\r\n  {\r\n    \"$type\": \"Assets.Game.Components.UnitComponent,
+    Assembly-CSharp\",\r\n    \"UnitType\": 0,\r\n    \"TypeId\": 56,\r\n    \"Type\":
+    \"Assets.Game.Components.UnitComponent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null\",\r\n    \"IsCollapsed\": true\r\n  },\r\n  {\r\n    \"$type\":
+    \"Reactor.Unity.Components.ViewComponent, Assembly-CSharp\",\r\n    \"TypeId\":
+    59,\r\n    \"Type\": \"Reactor.Unity.Components.ViewComponent, Assembly-CSharp,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\r\n    \"WrapperType\":
+    \"Reactor.Unity.Components.ViewComponentWrapper, Assembly-CSharp, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null\",\r\n    \"IsCollapsed\": true\r\n  }\r\n]"
+  Name: Unit

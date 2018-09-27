@@ -23,12 +23,10 @@ namespace Reactor.Systems.Executor.Handlers
 
         public SubscriptionToken ProcessEntity(IEntityReactionSystem system, IEntity entity)
         {
-            //var predicate = system.TargetGroup as IHasPredicate;
-            var subscription = system.Impact(entity)
-                .Subscribe(x =>
-                {
-                    system.Reaction(x);
-                });
+            var observable = system.Impact(entity);
+
+            var subscription = observable != null ? observable
+                .Subscribe(system.Reaction) : Disposable.Empty;
 
             return new SubscriptionToken(entity, subscription);
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.Reactor.Unity.Extensions;
 using Newtonsoft.Json;
 using Reactor.Components;
 using Reactor.Pools;
@@ -38,7 +37,9 @@ namespace Reactor.Unity.MonoBehaviours
                 Components.Add(view);
             }
                 (view as ViewComponent).GameObject = this.gameObject;
-            pool.CreateEntity(Components);
+            var entity = pool.CreateEntity(Components);
+            var entityView = this.gameObject.AddComponent<EntityView>();
+            entityView.Entity = entity;
             Destroy(this);
         }
 

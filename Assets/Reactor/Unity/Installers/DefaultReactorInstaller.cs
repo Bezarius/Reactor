@@ -43,8 +43,12 @@ namespace Reactor.Unity.Installers
 
             Container.Bind<ICoreManager>().To<CoreManager>().NonLazy();
 
+            // todo: shift to game install
             Container.Bind<IUnitFactory>().To<UnitFactory>().AsSingle();
             Container.Bind<IMissileFactory>().To<MissileFactory>().AsSingle();
+            Container.Bind<IAbilityFactory>().To<AbilityFactory>().AsSingle();
+            Container.Bind<IVisualEffectFactory>().To<VisualEffectFactory>().AsSingle();
+            Container.Bind<IItemFactory>().To<ItemFactory>().AsSingle();
         }
 
         private void InitEntityComponents()
