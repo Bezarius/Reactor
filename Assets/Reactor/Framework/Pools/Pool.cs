@@ -36,7 +36,7 @@ namespace Reactor.Pools
         }
 
         //todo: строить без использования финального реактора, а использовать постепенное построение, что бы избежать необходимость установки очередности с помощью приоритетов
-        public IEntity BuildEntity<T>(T blueprint, Action<IEntity> preSetup = null) where T : class, IBlueprint
+        public IEntity CreateEntity<T>(T blueprint, Action<IEntity> preSetup = null) where T : class, IBlueprint
         {
             Assert.IsNotNull(blueprint, "blueprint != null");
 
@@ -54,6 +54,8 @@ namespace Reactor.Pools
                 }
                 // todo: находит реактор, у которого индекс не совпадает с сущностью
                 reactor = _executor.GetSystemReactor(hs);
+
+                _reactorIndex.Add(type, reactor);
             }
 
             Assert.IsNotNull(reactor, "reactor != null");

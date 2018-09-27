@@ -1,6 +1,5 @@
 ﻿using Reactor.Entities;
 using Reactor.Groups;
-using Reactor.Pools;
 using Reactor.Systems;
 using Reactor.Unity.Components;
 using Reactor.Unity.MonoBehaviours;
@@ -13,31 +12,28 @@ namespace Assets.Reactor.Examples.PooledViews.Systems
     {
         public IGroup TargetGroup { get; private set; }
 
-        private readonly IPool _pool;
-
-        public ColliderInteractionSystem(IPoolManager poolManager)
+        public ColliderInteractionSystem()
         {
-            TargetGroup = new Group(
-                            typeof(SelfDestructComponent),
-                            typeof(ColliderComponent),
-                            typeof(ViewComponent));
-
-            _pool = poolManager.GetPool();
+            TargetGroup = new GroupBuilder()
+                    .WithComponent<SelfDestructComponent>()
+                    .WithComponent<ColliderComponent>()
+                    .WithComponent<ViewComponent>()
+                    .Build();
         }
 
         public IObservable<IEntity> Impact(IEntity entity)
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
 
-            return viewComponent.View
+            return viewComponent.GameObject
                 .OnCollisionEnterAsObservable().Where(x => x.gameObject.CompareTag("IEntity"))
                 .Select(x => x.gameObject.GetComponent<EntityView>().Entity);
         }
 
         public void Reaction(IEntity sourceEntity, IEntity targetEntity)
         {
-            if(targetEntity != null)
-                _pool.RemoveEntity(targetEntity);
+            if (targetEntity != null)
+                targetEntity.Destory();
         }
     }
 }

@@ -110,7 +110,7 @@ namespace Assets.Editor
             if (string.IsNullOrEmpty(_searchString))
             {
                 foreach (var componentType in _possibleComponents)
-                    dict.Add(componentType.Name, componentType);
+                    dict.Add(componentType.FullName, componentType);
             }
             else
             {

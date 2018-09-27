@@ -2,6 +2,6 @@
 
 namespace Assets.Reactor.Examples.SceneFirstSetup.Components
 {
-    public class CubeComponent : IComponent
+    public class CubeComponent : EntityComponent<CubeComponent>
     {}
 }

@@ -2,7 +2,7 @@
 
 namespace Assets.Tests.Scenes.GroupedPerformance.Components
 {
-    public class RotationComponent : IComponent
+    public class RotationComponent : EntityComponent<RotationComponent>
     {
         public float RotationSpeed { get; set; }
     }

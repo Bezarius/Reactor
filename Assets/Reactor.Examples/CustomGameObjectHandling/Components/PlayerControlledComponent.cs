@@ -2,6 +2,6 @@
 
 namespace Assets.Reactor.Examples.CustomGameObjectHandling.Components
 {
-    public class PlayerControlledComponent : IComponent
+    public class PlayerControlledComponent : EntityComponent<PlayerControlledComponent>
     {}
 }

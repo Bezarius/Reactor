@@ -10,7 +10,7 @@ namespace Reactor.Pools
     {
         string Name { get; }
         IEnumerable<IEntity> Entities { get; }
-        IEntity BuildEntity<T>(T blueprint, Action<IEntity> preSetup = null) where T : class, IBlueprint;
+        IEntity CreateEntity<T>(T blueprint, Action<IEntity> preSetup = null) where T : class, IBlueprint;
         IEntity CreateEntity();
         IEntity CreateEntity(IEnumerable<IComponent> components);
         void RemoveEntity(IEntity entity);

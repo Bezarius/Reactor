@@ -75,7 +75,7 @@ namespace Reactor.Entities
     {
         public int Id { get; private set; }
 
-        public SystemReactor Reactor
+        public ISystemReactor Reactor
         {
             get { return _reactor; }
             set { _reactor = value; }
@@ -94,10 +94,10 @@ namespace Reactor.Entities
         private readonly ReactiveCommand<IComponent> _removeComponentSubject = new ReactiveCommand<IComponent>();
         public IReactiveCommand<IComponent> OnRemoveComponent { get { return _removeComponentSubject; } }
 
-        private SystemReactor _reactor;
+        private ISystemReactor _reactor;
         private readonly List<IComponent> _components;
 
-        public Entity(int id, IEnumerable<IComponent> components, IPool pool, SystemReactor reactor)
+        public Entity(int id, IEnumerable<IComponent> components, IPool pool, ISystemReactor reactor)
         {
             _reactor = reactor;
             Id = id;
@@ -107,7 +107,6 @@ namespace Reactor.Entities
 
         public T AddComponent<T>(T component) where T : class, IComponent
         {
-            //Debug.Log(string.Format("add '{0}' to entity with id: {1}", typeof(T), Id));
             var idx = _reactor.GetFutureComponentIdx(component);
             _components.Insert(idx, component);
             _reactor.AddComponent(this, component);
@@ -128,12 +127,6 @@ namespace Reactor.Entities
         public void AddComponents(IEnumerable<IComponent> components)
         {
             throw new NotImplementedException();
-            /*
-            foreach (var component in components)
-            {
-                _components.Add(component.GetType(), component);
-            }
-            EventSystem.Publish(new ComponentsAddedEvent(this, components));*/
         }
 
         public void RemoveComponent<T>() where T : class, IComponent
@@ -251,6 +244,11 @@ namespace Reactor.Entities
             if (idx >= 0) //todo: try optimize because every check slowdown system
                 return _components[idx] as T;
             return null;
+        }
+
+        public void Destory()
+        {
+            this.Pool.RemoveEntity(this);
         }
 
         public void Dispose()

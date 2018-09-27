@@ -15,15 +15,15 @@ namespace Assets.Reactor.Examples.PooledViews.Systems
             TargetGroup = new GroupBuilder()
                 .WithComponent<ColliderComponent>()
                 .WithComponent<ViewComponent>()
-                .WithPredicate(x=>x.GetComponent<ViewComponent>().View != null).Build();
+                .Build();
         }
 
         public void Setup(IEntity entity)
         {
             var view = entity.GetComponent<ViewComponent>();
             var collider = entity.GetComponent<ColliderComponent>();
-            collider.Collider = view.View.GetComponent<Collider>();
-            collider.Rigidbody = view.View.GetComponent<Rigidbody>();
+            collider.Collider = view.GameObject.GetComponent<Collider>();
+            collider.Rigidbody = view.GameObject.GetComponent<Rigidbody>();
         }
     }
 }

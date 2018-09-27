@@ -1,8 +1,8 @@
-﻿using Reactor.Components;
-using UnityEngine;
+﻿using Assets.Reactor.Examples.PooledViews.ViewResolvers;
+using Reactor.Components;
 
-public class SelfDestructComponent : IComponent
+public class SelfDestructComponent : EntityComponent<SelfDestructComponent>
 {
-    public Vector3 StartingPosition { get; set; }
-    public float Lifetime { get; set; }
+    public DestructableTypes DestructableTypes;
+    public float Lifetime;
 }

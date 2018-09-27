@@ -2,7 +2,7 @@
 
 namespace Reactor.Tests.Components
 {
-    public class TestComponentThree : IComponent
+    public class TestComponentThree : EntityComponent<TestComponentThree>
     {
         public string Data { get; set; }
     }

@@ -1,7 +1,6 @@
 ﻿using System;
 using Reactor.Entities;
 using Reactor.Groups;
-using Reactor.Pools;
 using Reactor.Systems;
 using Reactor.Unity.Components;
 using UniRx;
@@ -12,12 +11,12 @@ namespace Assets.Reactor.Examples.PooledViews.Systems
     {
         public IGroup TargetGroup { get; private set; }
 
-        private readonly IPool _defaultPool;
-
-        public SelfDestructionSystem(IPoolManager poolManager)
+        public SelfDestructionSystem()
         {
-            TargetGroup = new Group(typeof(SelfDestructComponent), typeof(ViewComponent));
-            _defaultPool = poolManager.GetPool();
+            TargetGroup = new GroupBuilder()
+                .WithComponent<SelfDestructComponent>()
+                .WithComponent<ViewComponent>()
+                .Build();
         }
 
         public IObservable<IEntity> Impact(IEntity entity)
@@ -28,7 +27,7 @@ namespace Assets.Reactor.Examples.PooledViews.Systems
 
         public void Reaction(IEntity entity)
         {
-            _defaultPool.RemoveEntity(entity);
+            entity.Destory();
         }
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Assets.Game.Enums;
 
 public static class EnumHelper
 {

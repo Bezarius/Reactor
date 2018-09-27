@@ -15,7 +15,7 @@ namespace Assets.Reactor.Examples.GameObjectLinking.Systems
         public void Setup(IEntity entity)
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
-            viewComponent.View.transform.localScale = Vector3.one*3;
+            viewComponent.GameObject.transform.localScale = Vector3.one*3;
         }
     }
 }

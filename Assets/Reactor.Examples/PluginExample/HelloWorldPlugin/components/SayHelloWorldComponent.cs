@@ -2,5 +2,5 @@
 
 namespace Assets.Reactor.Examples.PluginExample.HelloWorldPlugin.components
 {
-    public class SayHelloWorldComponent : IComponent { }
+    public class SayHelloWorldComponent : EntityComponent<SayHelloWorldComponent> { }
 }

@@ -1,5 +1,4 @@
-﻿using Assets.Game.SceneCollections;
-using Reactor.Entities;
+﻿using Reactor.Entities;
 using Reactor.Groups;
 using Reactor.Systems;
 using Reactor.Unity.Components;
@@ -10,17 +9,16 @@ namespace Reactor.Unity.Systems
     public abstract class ViewResolverSystem : ISetupSystem
     {
         public IViewHandler ViewHandler { get; private set; }
-        public IPrefabLoader PrefabLoader { get; private set; }
 
-        public virtual IGroup TargetGroup
-        {
-            get { return new Group(typeof(ViewComponent)); }
-        }
+        public virtual IGroup TargetGroup { get; protected set; }
 
-        protected ViewResolverSystem(IViewHandler viewHandler, IPrefabLoader prefabLoader)
+        protected ViewResolverSystem(IViewHandler viewHandler)
         {
+            TargetGroup = new GroupBuilder()
+                .WithComponent<ViewComponent>()
+                .Build();
+
             ViewHandler = viewHandler;
-            PrefabLoader = prefabLoader;
         }
 
         public abstract GameObject ResolveView(IEntity entity);

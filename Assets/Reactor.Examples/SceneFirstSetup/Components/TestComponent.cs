@@ -2,7 +2,7 @@
 
 namespace Assets.Reactor.Examples.SceneFirstSetup.Components
 {
-    public class TestComponent : IComponent
+    public class TestComponent : EntityComponent<TestComponent>
     {
         public string Name { get; set; }
         public int Age { get; set; }

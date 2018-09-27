@@ -1,6 +1,6 @@
 ﻿using Reactor.Components;
 
-public class SpawnerComponent : IComponent
+public class SpawnerComponent : EntityComponent<SpawnerComponent>
 {
-    public float SpawnRate { get; set; }
+    public float SpawnRate;
 }

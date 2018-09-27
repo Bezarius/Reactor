@@ -1,5 +1,8 @@
-﻿using Reactor.Entities;
-using Reactor.Events;
+﻿using System;
+using Assets.Game.SceneCollections;
+using Assets.Reactor.Examples.PooledViews.Blueprints;
+using Reactor.Blueprints;
+using Reactor.Entities;
 using Reactor.Groups;
 using Reactor.Pools;
 using Reactor.Unity.Components;
@@ -8,30 +11,65 @@ using UnityEngine;
 
 namespace Assets.Reactor.Examples.PooledViews.ViewResolvers
 {
-    public class SelfDestructionViewResolver : DefaultPooledViewResolverSystem
+    public enum DestructableTypes
     {
-        public override IGroup TargetGroup
+        PooledPrefab
+    }
+
+    public sealed class SelfDestructionViewResolver : PooledViewResolverSystem
+    {
+        public override IGroup TargetGroup { get; protected set; }
+
+        private readonly Transform _parentTrasform = GameObject.Find("Destructables").transform;
+
+        public SelfDestructionViewResolver(PrefabLoader<DestructableTypes> prefabLoader) : base(prefabLoader)
         {
-            get { return new Group(typeof(SelfDestructComponent), typeof(ViewComponent)); }
+            TargetGroup = new GroupBuilder()
+                .WithComponent<SelfDestructComponent>()
+                .WithComponent<ViewComponent>()
+                .Build();
         }
 
-        public SelfDestructionViewResolver(IPoolManager poolManager, IEventSystem eventSystem)
-            : base(poolManager, eventSystem)
+        protected override void Resolve(IEntity entity)
         {
-            ViewPool.PreAllocate(20);
+            var component = entity.GetComponent<SelfDestructComponent>();
+            var typeId = (int)component.DestructableTypes;
+            var view = AllocateView(entity, typeId);
+            view.name = string.Format("destructable-{0}", entity.Id);
+        }
+    }
+
+    public interface IDestructableFactory
+    {
+        IEntity Create(DestructableTypes type, Vector3 pos, Quaternion rotation, Vector3 scale);
+    }
+
+    public class DestructableFactory : IDestructableFactory
+    {
+        private readonly IPool _pool;
+
+        private readonly Func<IBlueprint>[] _blueprints;
+
+        public DestructableFactory(IPoolManager poolManager)
+        {
+            _pool = poolManager.GetPool("destructablePool");
+
+            // todo: create enum to blueprint editor
+            var typeLen = Enum.GetValues(typeof(DestructableTypes)).Length;
+            _blueprints = new Func<IBlueprint>[typeLen];
+            _blueprints[(int)DestructableTypes.PooledPrefab] = () => new SelfDestructBlueprint();
+
         }
 
-        protected override GameObject ResolvePrefabTemplate()
+        public IEntity Create(DestructableTypes type, Vector3 pos, Quaternion rotation, Vector3 scale)
         {
-            return Resources.Load("PooledPrefab") as GameObject;
-        }
-
-        protected override GameObject AllocateView(IEntity entity)
-        {
-            var selfDestructComponent = entity.GetComponent<SelfDestructComponent>();
-            var allocatedView = base.AllocateView(entity);
-            allocatedView.transform.position = selfDestructComponent.StartingPosition;
-            return allocatedView;
+            var vfx = _pool.CreateEntity(_blueprints[(int)type]());
+            var view = vfx.GetComponent<ViewComponent>();
+            var tr = view.GameObject.transform;
+            tr.position = pos;
+            tr.rotation = rotation;
+            tr.localScale = scale;
+            return vfx;
         }
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Reactor.Examples.RandomReactions.Components
 {
-    public class RandomColorComponent : IComponent
+    public class RandomColorComponent : EntityComponent<RandomColorComponent>
     {
         public ReactiveProperty<Color> Color { get; set; }
         public float Elapsed { get; set; }

@@ -14,7 +14,7 @@ namespace Reactor.Unity.Systems
     [Priority(999)]
     public abstract class PooledViewResolverSystem : ISetupSystem
     {
-        public virtual IGroup TargetGroup { get; set; }
+        public virtual IGroup TargetGroup { get; protected set; }
 
         private readonly List<IViewPool> _viewPools = new List<IViewPool>();
 

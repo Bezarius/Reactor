@@ -2,7 +2,7 @@
 
 namespace Assets.Reactor.Examples.GameObjectBinding.components
 {
-    public class SphereComponent : IComponent
+    public class SphereComponent : EntityComponent<SphereComponent>
     {
          
     }

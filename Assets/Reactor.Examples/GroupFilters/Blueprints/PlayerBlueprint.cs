@@ -1,6 +1,7 @@
-﻿using Assets.Reactor.Examples.GroupFilters.Components;
+﻿using System.Collections.Generic;
+using Assets.Reactor.Examples.GroupFilters.Components;
 using Reactor.Blueprints;
-using Reactor.Entities;
+using Reactor.Components;
 
 namespace Assets.Reactor.Examples.GroupFilters.Blueprints
 {
@@ -15,11 +16,16 @@ namespace Assets.Reactor.Examples.GroupFilters.Blueprints
             Score = score;
         }
 
-        public void Apply(IEntity entity)
+        public IEnumerable<IComponent> Build()
         {
-            var scoreComponent = new HasScoreComponent { Name = Name };
-            scoreComponent.Score.Value = Score;
-            entity.AddComponent(scoreComponent);
+            return new List<IComponent>
+            {
+                new HasScoreComponent
+                {
+                    Name = Name,
+                    Score = { Value = Score}
+                }
+            };
         }
     }
 }

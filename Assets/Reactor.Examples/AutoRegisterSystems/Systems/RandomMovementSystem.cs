@@ -22,7 +22,7 @@ namespace Assets.Reactor.Examples.AutoRegisterSystems.Systems
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
             var positionChange = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
-            viewComponent.View.transform.position += positionChange;
+            viewComponent.GameObject.transform.position += positionChange;
         }
     }
 }

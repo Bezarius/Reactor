@@ -1,12 +1,14 @@
-﻿using Assets.Reactor.Examples.UsingBlueprints.Components;
+﻿using System.Collections.Generic;
+using Assets.Reactor.Examples.UsingBlueprints.Components;
 using Reactor.Blueprints;
-using Reactor.Entities;
+using Reactor.Components;
 
 namespace Assets.Reactor.Examples.UsingBlueprints.Blueprints
 {
     public class PlayerBlueprint : IBlueprint
     {
         public float DefaultHealth { get; set; }
+
         public string Name { get; set; }
 
         public PlayerBlueprint(string name, float defaultHealth = 100.0f)
@@ -15,10 +17,20 @@ namespace Assets.Reactor.Examples.UsingBlueprints.Blueprints
             Name = name;
         }
 
-        public void Apply(IEntity entity)
+        public IEnumerable<IComponent> Build()
         {
-            entity.AddComponent(new HasName { Name = Name });
-            entity.AddComponent(new WithHealthComponent { CurrentHealth = DefaultHealth, MaxHealth = DefaultHealth});
+            return new List<IComponent>
+            {
+                new HasName
+                {
+                    Name = Name
+                },
+                new WithHealthComponent
+                {
+                    CurrentHealth = DefaultHealth,
+                    MaxHealth = DefaultHealth
+                }
+            };
         }
     }
 }

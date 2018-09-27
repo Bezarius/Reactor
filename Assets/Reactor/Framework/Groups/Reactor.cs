@@ -24,7 +24,7 @@ namespace Reactor.Groups
         void AddGroupAccessor(IGroupAccessor groupAccessor);
     }
 
-    public class SystemReactor : ISystemContainer
+    public class SystemReactor : ISystemReactor
     {
         private readonly ISystemExecutor _systemExecutor;
         public readonly HashSet<Type> TargetTypesSet;

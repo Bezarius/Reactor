@@ -9,7 +9,7 @@ namespace Reactor.Entities
     public interface IEntity : IDisposable
     {
         int Id { get; }
-        Groups.SystemReactor Reactor { get; set; }
+        Groups.ISystemReactor Reactor { get; set; }
         IPool Pool { get; }
         IEnumerable<IComponent> Components { get; }
 
@@ -26,6 +26,8 @@ namespace Reactor.Entities
 
         bool HasComponent<T>() where T : class, IComponent;
         bool HasComponents(params Type[] component);
+
+        void Destory();
 
         IReactiveCommand<IComponent> OnAddComponent { get; }
         IReactiveCommand<IComponent> OnRemoveComponent { get; }

@@ -23,7 +23,7 @@ namespace Assets.Tests.Scenes.GroupedPerformance.Systems
             var viewComponent = entity.GetComponent<ViewComponent>();
 
             var rotation = rotationComponent.RotationSpeed * Time.deltaTime;
-            viewComponent.View.transform.Rotate(0, rotation, 0);
+            viewComponent.GameObject.transform.Rotate(0, rotation, 0);
         }
     }
 }

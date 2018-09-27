@@ -13,8 +13,9 @@ namespace Reactor.Unity.Installers
 
         public override void InstallBindings()
         {
-            Container.Bind<ISystem>().To(x => x.AllTypes().DerivingFrom<ISystem>().InNamespaces(SystemNamespaces)).AsSingle();
-            Container.Bind(x => x.AllTypes().DerivingFrom<ISystem>().InNamespaces(SystemNamespaces)).AsSingle();
+            SystemNamespaces.Insert(0, "Reactor.Unity.Systems");
+            Container.Bind<ISystem>().To(x => x.AllTypes().Where(z => !z.IsAbstract).DerivingFrom<ISystem>().InNamespaces(SystemNamespaces)).AsSingle();
+            Container.Bind(x => x.AllTypes().Where(z => !z.IsAbstract).DerivingFrom<ISystem>().InNamespaces(SystemNamespaces)).AsSingle();
         }
     }
 }

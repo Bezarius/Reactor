@@ -1,5 +1,7 @@
-﻿using Reactor.Blueprints;
-using Reactor.Entities;
+﻿using System.Collections.Generic;
+using Assets.Reactor.Examples.PooledViews.ViewResolvers;
+using Reactor.Blueprints;
+using Reactor.Components;
 using Reactor.Unity.Components;
 using UnityEngine;
 
@@ -9,39 +11,19 @@ namespace Assets.Reactor.Examples.PooledViews.Blueprints
     {
         private readonly float _minLifetime = 2.0f;
         private readonly float _maxLifetime = 5.0f;
-        private readonly Vector3 _startPosition;
 
-        public SelfDestructBlueprint(Vector3 startPosition) 
+        public IEnumerable<IComponent> Build()
         {
-            _startPosition = startPosition;
-        }
-
-        public void Apply(IEntity entity)
-        {
-            /*
-            var selfDestructComponent = new SelfDestructComponent
+            return new IComponent[]
             {
-                Lifetime = Random.Range(_minLifetime, _maxLifetime),
-                StartingPosition = _startPosition
-            };
-            var componetns = new List<IComponent>
-            {
-                selfDestructComponent,
+                new SelfDestructComponent
+                {
+                    DestructableTypes = DestructableTypes.PooledPrefab,
+                    Lifetime = Random.Range(_minLifetime, _maxLifetime)
+                }, 
                 new ColliderComponent(),
                 new ViewComponent()
             };
-            entity.AddComponents(componetns);*/
-
-            entity.AddComponent(new SelfDestructComponent
-            {
-                Lifetime = Random.Range(_minLifetime, _maxLifetime),
-                StartingPosition = _startPosition
-            });
-
-            entity.AddComponent(new ColliderComponent());
-            entity.AddComponent(new ViewComponent());
-            //entity.AddComponent<ColliderComponent>();
-            //entity.AddComponent<ViewComponent>();
         }
     }
 }

@@ -36,8 +36,8 @@ namespace Reactor.Unity.MonoBehaviours
                 view = new ViewComponent();
                 Components.Add(view);
             }
-                (view as ViewComponent).GameObject = this.gameObject;
-            var entity = pool.CreateEntity(Components);
+            (view as ViewComponent).GameObject = this.gameObject;
+            var entity = pool.CreateEntity((IEnumerable<IComponent>)Components);
             var entityView = this.gameObject.AddComponent<EntityView>();
             entityView.Entity = entity;
             Destroy(this);

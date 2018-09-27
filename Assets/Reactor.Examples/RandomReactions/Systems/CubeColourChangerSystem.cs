@@ -31,7 +31,7 @@ namespace Assets.Reactor.Examples.RandomReactions.Systems
         {
             var colorComponent = entity.GetComponent<RandomColorComponent>();
             var cubeComponent = entity.GetComponent<ViewComponent>();
-            var renderer = cubeComponent.View.GetComponent<Renderer>();
+            var renderer = cubeComponent.GameObject.GetComponent<Renderer>();
             renderer.material.color = colorComponent.Color.Value;
         }
     }

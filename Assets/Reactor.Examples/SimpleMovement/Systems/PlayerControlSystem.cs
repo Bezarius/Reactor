@@ -39,7 +39,7 @@ namespace Assets.Reactor.Examples.SimpleMovement.Systems
             if (Input.GetKey(KeyCode.S)) { forardMovement = -1.0f; }
 
             var viewComponent = entity.GetComponent<ViewComponent>();
-            var transform = viewComponent.View.transform;
+            var transform = viewComponent.GameObject.transform;
             var newPosition = transform.position;
 
             newPosition.x += strafeMovement * MovementSpeed * Time.deltaTime;

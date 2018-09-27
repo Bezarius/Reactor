@@ -1,9 +1,6 @@
 ﻿using Reactor.Entities;
-using Reactor.Events;
-using Reactor.Pools;
 using Reactor.Unity.Systems;
 using UnityEngine;
-using Zenject;
 
 namespace Assets.Tests.Scenes.GroupedPerformance.ViewResolvers
 {
