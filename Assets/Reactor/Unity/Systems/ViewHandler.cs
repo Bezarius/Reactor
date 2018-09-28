@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Reactor.Unity.Systems
 {
-    public abstract class ViewHandler : IViewHandler
+    public class ViewHandler : IViewHandler
     {
         public IPoolManager PoolManager { get; private set; }
         public IEventSystem EventSystem { get; private set; }

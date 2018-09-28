@@ -50,7 +50,7 @@ namespace Assets.Reactor.Unity.ViewPooling
                 PreAllocate(IncrementSize);
             }
             var availableGameObject = _pooledObjects.Pop();
-            availableGameObject.SetActive(true);
+            availableGameObject.SetActive(true); // pref cost ~7.6% >_<
             return availableGameObject;
         }
 

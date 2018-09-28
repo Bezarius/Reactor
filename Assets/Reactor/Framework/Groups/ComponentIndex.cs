@@ -16,7 +16,6 @@ namespace Reactor.Groups
             _types = targetTypes;
         }
 
-        // todo: check posibility for fast rebuild if new type in array(_componentIdx) range
         public void Build()
         {
             if (_types.Count > 0)
@@ -31,7 +30,7 @@ namespace Reactor.Groups
                 }
 
                 // fill array -1
-                _componentIdx = Enumerable.Repeat(-1, ids.Max() + 1).ToArray();
+                _componentIdx = Enumerable.Repeat(-1, TypeHelper.Counter + 1).ToArray();
 
                 for (int j = 0; j < ids.Length; j++)
                 {
@@ -40,20 +39,18 @@ namespace Reactor.Groups
             }
             else
             {
-                _componentIdx = new int[0];
+                _componentIdx = Enumerable.Repeat(-1, TypeHelper.Counter + 1).ToArray();
             }
         }
 
         public bool HasIndex(int index)
         {
-            return index < _componentIdx.Length && _componentIdx[index] > -1;
+            return _componentIdx[index] > -1;
         }
 
         public int GetTypeIndex(int typeId)
         {
-            if (typeId < _componentIdx.Length) //todo: try optimize because every check slowdown system
-                return _componentIdx[typeId];
-            return -1;
+            return _componentIdx[typeId];
         }
 
         public void AddToIndex(Type type)

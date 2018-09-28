@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Reactor.Attributes;
-using Reactor.Components;
 using Reactor.Entities;
 using Reactor.Groups;
 using Reactor.Systems;
@@ -18,7 +17,9 @@ namespace Reactor.Extensions
         }
 
         public static IEnumerable<Tout> ForEachRun<Tin, Tout>(this IEnumerable<Tin> enumerable, Func<Tin, Tout> method)
-        { return enumerable.Select(method); }
+        {
+            return enumerable.Select(method);
+        }
 
         public static IEnumerable<IEntity> MatchingGroup(this IEnumerable<IEntity> entities, IGroup group)
         {

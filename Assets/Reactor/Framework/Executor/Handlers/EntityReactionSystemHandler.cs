@@ -26,7 +26,7 @@ namespace Reactor.Systems.Executor.Handlers
             var observable = system.Impact(entity);
 
             var subscription = observable != null ? observable
-                .Subscribe(system.Reaction) : Disposable.Empty;
+                .Subscribe(x => system.Reaction(entity)) : Disposable.Empty;
 
             return new SubscriptionToken(entity, subscription);
         }

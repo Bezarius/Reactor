@@ -5,6 +5,8 @@ using Reactor.Entities;
 using UniRx;
 using UnityEngine;
 
+
+
 namespace Reactor.Unity.MonoBehaviours
 {
     public interface IEntityView
@@ -36,9 +38,13 @@ namespace Reactor.Unity.MonoBehaviours
             }
             set
             {
+#if REACTOR_SUPPORT_COMPONENT_WRAPPERS
                 StopComponentMonitor();
+#endif
                 _entity = value;
+#if REACTOR_SUPPORT_COMPONENT_WRAPPERS
                 StartComponentMonitor();
+#endif
                 OnEntityUpdate.Execute(_entity);
             }
         }
@@ -49,16 +55,21 @@ namespace Reactor.Unity.MonoBehaviours
                 this.gameObject.SetEntityTag();
         }
 
+#if REACTOR_SUPPORT_COMPONENT_WRAPPERS
         private void OnEnable()
         {
             if (Entity != null)
                 StartComponentMonitor();
-        }
+    }
+#endif
 
+#if REACTOR_SUPPORT_COMPONENT_WRAPPERS
         private void OnDisable()
         {
+
             StopComponentMonitor();
         }
+#endif
 
         private void AddOrEnableWrapper(Type wrapperType)
         {

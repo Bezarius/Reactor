@@ -7,7 +7,6 @@ using Reactor.Entities;
 using Reactor.Events;
 using Reactor.Groups;
 using Reactor.Systems.Executor;
-using UnityEngine.Assertions;
 
 namespace Reactor.Pools
 {
@@ -38,8 +37,6 @@ namespace Reactor.Pools
         //todo: строить без использования финального реактора, а использовать постепенное построение, что бы избежать необходимость установки очередности с помощью приоритетов
         public IEntity CreateEntity<T>(T blueprint, Action<IEntity> preSetup = null) where T : class, IBlueprint
         {
-            Assert.IsNotNull(blueprint, "blueprint != null");
-
             var type = typeof(T);
             var components = blueprint.Build().ToList();
 
@@ -57,8 +54,6 @@ namespace Reactor.Pools
 
                 _reactorIndex.Add(type, reactor);
             }
-
-            Assert.IsNotNull(reactor, "reactor != null");
 
             var sortedComponents = new IComponent[components.Count];
             foreach (var component in components)
@@ -86,8 +81,6 @@ namespace Reactor.Pools
 
             SystemReactor reactor = _executor.GetSystemReactor(components);
 
-            Assert.IsNotNull(reactor, "reactor != null");
-
             var entity = EntityFactory.Create(this, _indexPool.GetId(), components, reactor);
 
             _entities.Add(entity);
@@ -102,8 +95,6 @@ namespace Reactor.Pools
         public IEntity CreateEntity(IEnumerable<IComponent> components)
         {
             SystemReactor reactor = _executor.GetSystemReactor(components);
-
-            Assert.IsNotNull(reactor, "reactor != null");
 
             var sortedComponents = new IComponent[components.Count()];
             foreach (var component in components)

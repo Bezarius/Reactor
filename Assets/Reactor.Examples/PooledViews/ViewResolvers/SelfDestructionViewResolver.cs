@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Assets.Game.SceneCollections;
 using Assets.Reactor.Examples.PooledViews.Blueprints;
 using Reactor.Blueprints;
@@ -22,6 +23,8 @@ namespace Assets.Reactor.Examples.PooledViews.ViewResolvers
 
         private readonly Transform _parentTrasform = GameObject.Find("Destructables").transform;
 
+        private StringBuilder _stringBuilder = new StringBuilder();
+
         public SelfDestructionViewResolver(PrefabLoader<DestructableTypes> prefabLoader) : base(prefabLoader)
         {
             TargetGroup = new GroupBuilder()
@@ -35,7 +38,8 @@ namespace Assets.Reactor.Examples.PooledViews.ViewResolvers
             var component = entity.GetComponent<SelfDestructComponent>();
             var typeId = (int)component.DestructableTypes;
             var view = AllocateView(entity, typeId);
-            view.name = string.Format("destructable-{0}", entity.Id);
+            _stringBuilder.Length = 0; // perf cost ~ 0.4%
+            view.name = _stringBuilder.Append("destructable-").Append(entity.Id).ToString(); // perf cost ~ 1.4% (int append ~ 0.8%, set_name ~ 0.6%)
         }
     }
 

@@ -6,7 +6,7 @@ namespace Assets.Reactor.Examples.RandomReactions
 {
     public class Application : ReactorApplication
     {
-        private readonly int _cubeCount = 500;
+        private readonly int _cubeCount = 5000;
 
         protected override void ApplicationStarting()
         {

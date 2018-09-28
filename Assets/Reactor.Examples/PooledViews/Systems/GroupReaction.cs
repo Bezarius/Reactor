@@ -13,7 +13,10 @@ namespace Assets.Reactor.Examples.PooledViews.Systems
 
         public GroupReaction()
         {
-            TargetGroup = new Group(typeof(SpawnerComponent), typeof(ViewComponent));
+            TargetGroup = new GroupBuilder()
+                .WithComponent<SpawnerComponent>()
+                .WithComponent<ViewComponent>()
+                .Build();
         }
 
         public IObservable<IGroupAccessor> Impact(IGroupAccessor @group)
@@ -25,7 +28,7 @@ namespace Assets.Reactor.Examples.PooledViews.Systems
         {
             var viewComponent = entity.GetComponent<ViewComponent>();
             var pos = viewComponent.GameObject.transform.position;
-            viewComponent.GameObject.transform.position = new Vector3(pos.x + UnityEngine.Random.Range(-1, 1f), pos.y + UnityEngine.Random.Range(-1, 1f), pos.z + UnityEngine.Random.Range(-1, 1f));
+            viewComponent.GameObject.transform.position = new Vector3(pos.x + Random.Range(-1, 1f), pos.y + Random.Range(-1, 1f), pos.z + Random.Range(-1, 1f));
         }
     }
 }

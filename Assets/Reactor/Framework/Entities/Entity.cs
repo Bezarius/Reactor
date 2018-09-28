@@ -12,7 +12,7 @@ namespace Reactor.Entities
 
     public static class TypeHelper
     {
-        private static int _counter;
+        public static int Counter { get; private set; }
 
         private static readonly Dictionary<Type, int> TypeDict = new Dictionary<Type, int>();
 
@@ -26,13 +26,13 @@ namespace Reactor.Entities
 
         public static int Initialize(Type type)
         {
-            _counter++;
+            Counter++;
 #if DEBUG
             if (TypeDict.ContainsKey(type))
                 throw new Exception(string.Format(@"Type '{0}' is already initialized", type));
 #endif
-            TypeDict[type] = _counter;
-            return _counter;
+            TypeDict[type] = Counter;
+            return Counter;
         }
 
         static TypeHelper()
