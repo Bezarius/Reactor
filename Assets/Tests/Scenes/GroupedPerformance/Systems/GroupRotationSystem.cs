@@ -10,7 +10,7 @@ namespace Assets.Tests.Scenes.GroupedPerformance.Systems
 {
     public class GroupRotationSystem : IGroupReactionSystem
     {
-        public IGroup TargetGroup { get { return new Group(typeof(ViewComponent), typeof(RotationComponent));} }
+        public IGroup TargetGroup { get { return new Group(typeof(ViewComponent), typeof(RotationComponent)); } }
 
         public IObservable<IGroupAccessor> Impact(IGroupAccessor @group)
         {
@@ -22,7 +22,7 @@ namespace Assets.Tests.Scenes.GroupedPerformance.Systems
             var rotationComponent = entity.GetComponent<RotationComponent>();
             var viewComponent = entity.GetComponent<ViewComponent>();
 
-            var rotation = rotationComponent.RotationSpeed*Time.deltaTime;
+            var rotation = rotationComponent.RotationSpeed * Time.deltaTime;
             viewComponent.GameObject.transform.Rotate(0, rotation, 0);
         }
     }

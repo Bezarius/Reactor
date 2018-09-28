@@ -8,7 +8,7 @@ namespace Assets.Tests.Scenes.GroupedPerformance
 {
     public class Application : ReactorApplication
     {
-        private readonly int _cubeCount = 500;
+        private readonly int _cubeCount = 5000;
 
         protected override void ApplicationStarting()
         {
