@@ -1,4 +1,5 @@
-﻿using Assets.Reactor.Examples.SimpleMovement.Components;
+﻿using System;
+using Assets.Reactor.Examples.SimpleMovement.Components;
 using Reactor.Entities;
 using Reactor.Groups;
 using Reactor.Systems;

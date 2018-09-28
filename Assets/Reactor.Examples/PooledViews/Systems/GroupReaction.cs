@@ -1,9 +1,11 @@
-﻿using Reactor.Entities;
+﻿using System;
+using Reactor.Entities;
 using Reactor.Groups;
 using Reactor.Systems;
 using Reactor.Unity.Components;
 using UniRx;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Assets.Reactor.Examples.PooledViews.Systems
 {

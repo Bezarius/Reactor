@@ -1,9 +1,11 @@
+using System;
 using Assets.Reactor.Examples.RandomReactions.Components;
 using Reactor.Entities;
 using Reactor.Groups;
 using Reactor.Systems;
 using UniRx;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Assets.Reactor.Examples.RandomReactions.Systems
 {

@@ -33,15 +33,15 @@ namespace Reactor.Unity.Installers
             Container.Bind<IPoolManager>().To<PoolManager>().AsSingle();
             Container.Bind<IViewHandler>().To<ViewHandler>().AsSingle();
 
-            Container.Bind<IInteractReactionSystemHandler>().To<InteractReactionSystemHandler>();
-            Container.Bind<IEntityReactionSystemHandler>().To<EntityReactionSystemHandler>();
-            Container.Bind<IGroupReactionSystemHandler>().To<GroupReactionSystemHandler>();
-            Container.Bind<ISetupSystemHandler>().To<SetupSystemHandler>();
-            Container.Bind<IManualSystemHandler>().To<ManualSystemHandler>();
+            Container.Bind<IInteractReactionSystemHandler>().To<InteractReactionSystemHandler>().AsSingle();
+            Container.Bind<IEntityReactionSystemHandler>().To<EntityReactionSystemHandler>().AsSingle();
+            Container.Bind<IGroupReactionSystemHandler>().To<GroupReactionSystemHandler>().AsSingle();
+            Container.Bind<ISetupSystemHandler>().To<SetupSystemHandler>().AsSingle();
+            Container.Bind<IManualSystemHandler>().To<ManualSystemHandler>().AsSingle();
 
-            Container.Bind<ISystemHandlerManager>().To<SystemHandlerManager>();
+            Container.Bind<ISystemHandlerManager>().To<SystemHandlerManager>().AsSingle();
 
-            Container.Bind<ICoreManager>().To<CoreManager>().NonLazy();
+            Container.Bind<ICoreManager>().To<CoreManager>().AsSingle().NonLazy();
         }
 
         private void InitEntityComponents()

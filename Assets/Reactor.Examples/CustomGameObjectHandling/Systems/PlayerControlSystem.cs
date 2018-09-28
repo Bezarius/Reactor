@@ -1,4 +1,5 @@
-﻿using Assets.Reactor.Examples.CustomGameObjectHandling.Components;
+﻿using System;
+using Assets.Reactor.Examples.CustomGameObjectHandling.Components;
 using Reactor.Entities;
 using Reactor.Groups;
 using Reactor.Systems;

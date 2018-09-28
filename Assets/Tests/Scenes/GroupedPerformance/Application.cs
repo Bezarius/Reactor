@@ -15,7 +15,7 @@ namespace Assets.Tests.Scenes.GroupedPerformance
             RegisterBoundSystem<CubeViewResolver>();
 
             // Enable one of the below to see impact
-            RegisterBoundSystem<GroupRotationSystem>();
+            //RegisterBoundSystem<GroupRotationSystem>();
             //RegisterBoundSystem<EntityRotationSystem>();
         }
 

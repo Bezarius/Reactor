@@ -10,14 +10,10 @@ namespace Reactor.Unity.Systems
     public class ViewComponentTeardown : ITeardownSystem
     {
 
-        public IGroup TargetGroup { get; private set; }
-
-        public ViewComponentTeardown()
-        {
-            TargetGroup = new GroupBuilder()
+        public IGroup TargetGroup { get; } = 
+            new GroupBuilder()
                 .WithComponent<ViewComponent>()
                 .Build();
-        }
 
         public void Teardown(IEntity entity)
         {
