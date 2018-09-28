@@ -5,8 +5,6 @@ using Reactor.Entities;
 using UniRx;
 using UnityEngine;
 
-
-
 namespace Reactor.Unity.MonoBehaviours
 {
     public interface IEntityView
@@ -24,10 +22,12 @@ namespace Reactor.Unity.MonoBehaviours
         [SerializeField]
         private string _poolName;
 
+#if REACTOR_SUPPORT_COMPONENT_WRAPPERS
         private readonly CompositeDisposable _compositeDisposable = new CompositeDisposable();
-        private IEntity _entity;
         private bool _monitorEnabled;
-
+#endif
+        private IEntity _entity;
+        
         public readonly IReactiveCommand<IEntity> OnEntityUpdate = new ReactiveCommand<IEntity>();
 
         public IEntity Entity
@@ -69,7 +69,6 @@ namespace Reactor.Unity.MonoBehaviours
 
             StopComponentMonitor();
         }
-#endif
 
         private void AddOrEnableWrapper(Type wrapperType)
         {
@@ -130,6 +129,7 @@ namespace Reactor.Unity.MonoBehaviours
                 _monitorEnabled = false;
             }
         }
+#endif
 
         private void OnDestroy()
         {
