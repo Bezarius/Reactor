@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Reactor.Components;
 using Reactor.Entities;
 using Reactor.Extensions;
@@ -24,7 +25,7 @@ namespace Reactor.Groups
         void AddGroupAccessor(IGroupAccessor groupAccessor);
     }
 
-    public class SystemReactor : ISystemReactor
+    public sealed class SystemReactor : ISystemReactor
     {
         private readonly ISystemExecutor _systemExecutor;
         public readonly HashSet<Type> TargetTypesSet;
@@ -40,7 +41,7 @@ namespace Reactor.Groups
         public bool HasGroupOrSystems { get; private set; }
 
 
-        private readonly ComponentIndex _componentIndex;
+        internal readonly ComponentIndex _componentIndex;
         private readonly ConnectionIndex _inConnectionIndex;
         private readonly ConnectionIndex _outConnectionIndex;
 

@@ -5,8 +5,8 @@ namespace Reactor.Systems.Executor
 {
     public class SubscriptionToken
     {
-        public IEntity AssociatedEntity { get; private set; }
-        public IDisposable Disposable { get; private set; }
+        public IEntity AssociatedEntity { get; }
+        public IDisposable Disposable { get; }
 
         public SubscriptionToken(IEntity associatedEntity, IDisposable disposable)
         {

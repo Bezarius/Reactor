@@ -5,7 +5,7 @@ namespace Reactor.Events
 {
     public class PoolAddedEvent
     {
-        public IPool Pool { get; private set; }
+        public IPool Pool { get; }
 
         public PoolAddedEvent(IPool pool)
         {

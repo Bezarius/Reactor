@@ -28,9 +28,6 @@ namespace Reactor.Unity.Installers
                     })
                 )
                 .AsSingle();
-
-
-            Debug.Log(Container);
         }
     }
 }

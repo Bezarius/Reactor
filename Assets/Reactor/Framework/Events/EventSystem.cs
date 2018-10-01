@@ -5,16 +5,22 @@ namespace Reactor.Events
 {
     public class EventSystem : IEventSystem
     {
-        public IMessageBroker MessageBroker { get; private set; }
+        public IMessageBroker MessageBroker { get; }
 
         public EventSystem(IMessageBroker messageBroker)
-        { MessageBroker = messageBroker; }
+        {
+            MessageBroker = messageBroker;
+        }
 
         public void Publish<T>(T message)
-        { MessageBroker.Publish(message); }
+        {
+            MessageBroker.Publish(message);
+        }
 
         public IObservable<T> Receive<T>()
-        { return MessageBroker.Receive<T>(); }
+        {
+            return MessageBroker.Receive<T>();
+        }
 
     }
 }

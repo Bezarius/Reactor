@@ -5,8 +5,8 @@ namespace Reactor.Events
 {
     public class GroupAccessorAddedEvent
     {
-        public IGroupAccessor GroupAccessor { get; private set; }
-        public GroupAccessorToken GroupAccessorToken { get; private set; }
+        public IGroupAccessor GroupAccessor { get; }
+        public GroupAccessorToken GroupAccessorToken { get; }
 
         public GroupAccessorAddedEvent(GroupAccessorToken groupAccessorToken, IGroupAccessor groupAccessor)
         {

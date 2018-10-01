@@ -29,17 +29,14 @@ namespace Reactor.Components
 
         private static readonly Type _type = typeof(T);
 
-        public Type Type
-        {
-            get { return _type; }
-        }
+        public Type Type => _type;
 
         private static readonly Type _wrapperType =
             typeof(T).Assembly
             .GetTypes()
             .FirstOrDefault(field => field.BaseType != null && field.IsSubclassOf(typeof(ComponentWrapper<T>)));
 
-        public Type WrapperType { get { return _wrapperType; } }
+        public Type WrapperType => _wrapperType;
 
         #region Editor Stuff
 
@@ -50,10 +47,7 @@ namespace Reactor.Components
             .ToArray();
 
         [JsonIgnore]
-        public FieldInfo[] FieldInfos
-        {
-            get { return _fieldInfos; }
-        }
+        public FieldInfo[] FieldInfos => _fieldInfos;
 
         [HideInInspector]
         public bool IsCollapsed { get; set; }

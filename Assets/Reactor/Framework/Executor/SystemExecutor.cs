@@ -16,11 +16,11 @@ namespace Reactor.Systems.Executor
 
     public sealed class SystemHandlerManager : ISystemHandlerManager
     {
-        public IEntityReactionSystemHandler EntityReactionSystemHandler { get; private set; }
-        public IGroupReactionSystemHandler GroupReactionSystemHandler { get; private set; }
-        public ISetupSystemHandler SetupSystemHandler { get; private set; }
-        public IInteractReactionSystemHandler InteractReactionSystemHandler { get; private set; }
-        public IManualSystemHandler ManualSystemHandler { get; private set; }
+        public IEntityReactionSystemHandler EntityReactionSystemHandler { get; }
+        public IGroupReactionSystemHandler GroupReactionSystemHandler { get; }
+        public ISetupSystemHandler SetupSystemHandler { get; }
+        public IInteractReactionSystemHandler InteractReactionSystemHandler { get; }
+        public IManualSystemHandler ManualSystemHandler { get; }
 
 
         public SystemHandlerManager(
@@ -40,8 +40,8 @@ namespace Reactor.Systems.Executor
 
     public sealed class CoreManager : ICoreManager
     {
-        public IPoolManager PoolManager { get; private set; }
-        public ISystemHandlerManager HandlerManager { get; private set; }
+        public IPoolManager PoolManager { get; }
+        public ISystemHandlerManager HandlerManager { get; }
 
         public CoreManager(IPoolManager poolManager, ISystemHandlerManager handlerManager, ISystemExecutor systemExecutor)
         {
@@ -62,26 +62,17 @@ namespace Reactor.Systems.Executor
         private SystemReactor _emptyReactor;
         private ICoreManager _coreManager;
 
-        private bool _isDispising = false;
+        private bool _isDispising;
 
-        public SystemReactor EmptyReactor
-        {
-            get { return _emptyReactor ?? (_emptyReactor = new SystemReactor(this, new HashSet<Type>())); }
-        }
+        public SystemReactor EmptyReactor => _emptyReactor ?? (_emptyReactor = new SystemReactor(this, new HashSet<Type>()));
 
-        private IEventSystem EventSystem { get; set; }
+        private IEventSystem EventSystem { get; }
 
-        public IPoolManager PoolManager
-        {
-            get { return _coreManager.PoolManager; }
-        }
+        public IPoolManager PoolManager => _coreManager.PoolManager;
 
-        public ISystemHandlerManager HandlerManager
-        {
-            get { return _coreManager.HandlerManager; }
-        }
+        public ISystemHandlerManager HandlerManager => _coreManager.HandlerManager;
 
-        public IEnumerable<ISystem> Systems { get { return _systems; } }
+        public IEnumerable<ISystem> Systems => _systems;
 
         public SystemExecutor(IEventSystem eventSystem)
         {
@@ -112,13 +103,11 @@ namespace Reactor.Systems.Executor
             }
         }
 
-
         public void RemoveSystem(ISystem system)
         {
             _systems.Remove(system);
 
-            var manualSystem = system as IManualSystem;
-            if (manualSystem != null)
+            if (system is IManualSystem manualSystem)
             {
                 HandlerManager.ManualSystemHandler.Stop(manualSystem);
             }
@@ -138,28 +127,31 @@ namespace Reactor.Systems.Executor
         public void AddSystem(ISystem system)
         {
             _systems.Add(system);
-            if (system is ISetupSystem)
+
+            ComponentGroupHelper.Initialize(system.TargetGroup);
+
+            if (system is ISetupSystem setupSystem)
             {
-                _entitySubscribtionsOnSystems.Add(system, HandlerManager.SetupSystemHandler.Setup((ISetupSystem)system)
+                _entitySubscribtionsOnSystems.Add(system, HandlerManager.SetupSystemHandler.Setup(setupSystem)
                     .ToDictionary(x => x.AssociatedEntity));
             }
-            if (system is IGroupReactionSystem)
+            if (system is IGroupReactionSystem reactionSystem)
             {
-                _nonEntitySubscriptions.Add(system, HandlerManager.GroupReactionSystemHandler.Setup((IGroupReactionSystem)system));
+                _nonEntitySubscriptions.Add(system, HandlerManager.GroupReactionSystemHandler.Setup(reactionSystem));
             }
-            if (system is IEntityReactionSystem)
+            if (system is IEntityReactionSystem entityReactionSystem)
             {
-                _entitySubscribtionsOnSystems.Add(system, HandlerManager.EntityReactionSystemHandler.Setup((IEntityReactionSystem)system)
+                _entitySubscribtionsOnSystems.Add(system, HandlerManager.EntityReactionSystemHandler.Setup(entityReactionSystem)
                     .ToDictionary(x => x.AssociatedEntity));
             }
-            if (system is IInteractReactionSystem)
+            if (system is IInteractReactionSystem interactReactionSystem)
             {
-                _entitySubscribtionsOnSystems.Add(system, HandlerManager.InteractReactionSystemHandler.Setup((IInteractReactionSystem)system)
+                _entitySubscribtionsOnSystems.Add(system, HandlerManager.InteractReactionSystemHandler.Setup(interactReactionSystem)
                     .ToDictionary(x => x.AssociatedEntity));
             }
-            if (system is IManualSystem)
+            if (system is IManualSystem manualSystem)
             {
-                HandlerManager.ManualSystemHandler.Start((IManualSystem)system);
+                HandlerManager.ManualSystemHandler.Start(manualSystem);
             }
         }
 
@@ -227,8 +219,6 @@ namespace Reactor.Systems.Executor
                 SystemReactor reactor =
                     _systemReactors.FirstOrDefault(
                         x => x.TargetTypesSet.SetEquals(targetTypes));
-
-
 
                 if (reactor == null)
                 {
@@ -301,7 +291,8 @@ namespace Reactor.Systems.Executor
             }
             catch (Exception e)
             {
-                Debug.LogError(string.Format("Remove '{0}' subscription form entity with id: '{1}' error:\n{2}", system.GetType().Name, entity.Id, e));
+                Debug.LogError(
+                    $"Remove '{system.GetType().Name}' subscription form entity with id: '{entity.Id}' error:\n{e}");
             }
         }
 

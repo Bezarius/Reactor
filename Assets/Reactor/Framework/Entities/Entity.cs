@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Reactor.Components;
 using Reactor.Groups;
 using Reactor.Pools;
@@ -9,97 +8,35 @@ using UniRx;
 
 namespace Reactor.Entities
 {
-
-    public static class TypeHelper
-    {
-        public static int Counter { get; private set; }
-
-        private static readonly Dictionary<Type, int> TypeDict = new Dictionary<Type, int>();
-
-        public static int GetTypeId(Type type)
-        {
-            int idx;
-            if (!TypeDict.TryGetValue(type, out idx))
-                idx = Initialize(type);
-            return idx;
-        }
-
-        public static int Initialize(Type type)
-        {
-            Counter++;
-#if DEBUG
-            if (TypeDict.ContainsKey(type))
-                throw new Exception(string.Format(@"Type '{0}' is already initialized", type));
-#endif
-            TypeDict[type] = Counter;
-            return Counter;
-        }
-
-        static TypeHelper()
-        {
-            var assignFrom = typeof(IComponent);
-
-            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())
-                .Where(t => assignFrom.IsAssignableFrom(t) && !t.IsAbstract).ToList();
-
-            var tt = typeof(TypeCache<>);
-
-            foreach (var type in types)
-            {
-                var args = new[] { type };
-                var cache = tt.MakeGenericType(args);
-                var field = cache.GetField("TypeId", BindingFlags.Static | BindingFlags.Public);
-                var result = field.GetValue(null);
-                //Debug.Log(result);
-                //cache.GetMethod("")
-            }
-        }
-    }
-
-    public static class TypeCache<T>
-    {
-        public static readonly Type Type;
-
-        public static readonly int TypeId;
-
-        static TypeCache()
-        {
-            Type = typeof(T);
-            if (Type == null)
-                throw new Exception("Incorrect type initialization!");
-            TypeId = TypeHelper.Initialize(Type);
-        }
-    }
-
     public class Entity : IEntity
     {
-        public int Id { get; private set; }
+        public int Id { get; }
+        public IPool Pool { get; }
 
         public ISystemReactor Reactor
         {
-            get { return _reactor; }
-            set { _reactor = value; }
+            get => _reactor;
+            set => _reactor = (SystemReactor) value;
         }
 
-        public IPool Pool { get; private set; }
-        public IEnumerable<IComponent> Components { get { return _components; } }
+        public IEnumerable<IComponent> Components => _components;
 
         // todo: подумать как можно реализовать этот функционал более корректным способом
         // это удобная, но не самая лучшая реализация, т.к. команды могут быть вызваны вне сущности,
         // а это может привести к некорректному поведению EntityView и других потребителей данного функционала
         // Замена нужна реактивная, т.к. не реактивная реализация будет мотивировать на смешивание стилей 
         private readonly ReactiveCommand<IComponent> _addComponentSubject = new ReactiveCommand<IComponent>();
-        public IReactiveCommand<IComponent> OnAddComponent { get { return _addComponentSubject; } }
+        public IReactiveCommand<IComponent> OnAddComponent => _addComponentSubject;
 
         private readonly ReactiveCommand<IComponent> _removeComponentSubject = new ReactiveCommand<IComponent>();
-        public IReactiveCommand<IComponent> OnRemoveComponent { get { return _removeComponentSubject; } }
+        public IReactiveCommand<IComponent> OnRemoveComponent => _removeComponentSubject;
 
-        private ISystemReactor _reactor;
+        private SystemReactor _reactor;
         private readonly List<IComponent> _components;
 
         public Entity(int id, IEnumerable<IComponent> components, IPool pool, ISystemReactor reactor)
         {
-            _reactor = reactor;
+            _reactor = (SystemReactor)reactor;
             Id = id;
             Pool = pool;
             _components = components.ToList();
@@ -124,11 +61,6 @@ namespace Reactor.Entities
             return AddComponent(new T());
         }
 
-        public void AddComponents(IEnumerable<IComponent> components)
-        {
-            throw new NotImplementedException();
-        }
-
         public void RemoveComponent<T>() where T : class, IComponent
         {
             var typeId = TypeCache<T>.TypeId;
@@ -141,10 +73,7 @@ namespace Reactor.Entities
 
                 var disposable = component as IDisposable;
 
-                if (disposable != null)
-                {
-                    disposable.Dispose();
-                }
+                disposable?.Dispose();
 
                 OnRemoveComponent.Execute(component);
             }
@@ -162,10 +91,7 @@ namespace Reactor.Entities
 
             var disposable = component as IDisposable;
 
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
+            disposable?.Dispose();
 
             _reactor.RemoveComponent(this, component);
             OnRemoveComponent.Execute(component);
@@ -189,10 +115,7 @@ namespace Reactor.Entities
 
                     var disposable = component as IDisposable;
 
-                    if (disposable != null)
-                    {
-                        disposable.Dispose();
-                    }
+                    disposable?.Dispose();
                     _reactor.RemoveComponent(this, component);
                     _components.RemoveAt(idx);
                     OnRemoveComponent.Execute(component);
@@ -233,17 +156,11 @@ namespace Reactor.Entities
             return true;
         }
 
-
-
         public T GetComponent<T>() where T : class, IComponent
         {
-            //var type = typeof(T);
-            //Assert.IsTrue(_components.ContainsKey(type), string.Format(@"Entity with id: '{0}', doesn't contain '{1}' component", this.Id, type.Name));
             var typeId = TypeCache<T>.TypeId;
-            var idx = _reactor.GetComponentIdx(typeId);
-            if (idx >= 0) //todo: try optimize because every check slowdown system
-                return _components[idx] as T;
-            return null;
+            var idx = _reactor._componentIndex.GetTypeIndex(typeId);
+            return _components[idx] as T;
         }
 
         public void Destory()

@@ -5,8 +5,8 @@ namespace Reactor.Events
 {
     public class ComponentAddedEvent
     {
-        public IEntity Entity { get; private set; }
-        public IComponent Component { get; private set; }
+        public IEntity Entity { get; }
+        public IComponent Component { get; }
 
         public ComponentAddedEvent(IEntity entity, IComponent component)
         {

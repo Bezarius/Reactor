@@ -5,7 +5,7 @@ namespace Reactor.Systems.Executor.Handlers
 {
     public class ManualSystemHandler : IManualSystemHandler
     {
-        public IPoolManager PoolManager { get; private set; }
+        public IPoolManager PoolManager { get; }
 
         public ManualSystemHandler(IPoolManager poolManager)
         {

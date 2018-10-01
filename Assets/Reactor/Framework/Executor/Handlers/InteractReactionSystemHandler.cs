@@ -8,7 +8,7 @@ namespace Reactor.Systems.Executor.Handlers
 {
     public class InteractReactionSystemHandler : IInteractReactionSystemHandler
     {
-        public IPoolManager PoolManager { get; private set; }
+        public IPoolManager PoolManager { get; }
 
         public InteractReactionSystemHandler(IPoolManager poolManager)
         {

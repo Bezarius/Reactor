@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Reactor.Entities;
 
 namespace Reactor.Groups
 {
-    public class ComponentIndex
+    public sealed class ComponentIndex
     {
         private int[] _componentIdx;
 
@@ -48,6 +49,7 @@ namespace Reactor.Groups
             return _componentIdx[index] > -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetTypeIndex(int typeId)
         {
             return _componentIdx[typeId];

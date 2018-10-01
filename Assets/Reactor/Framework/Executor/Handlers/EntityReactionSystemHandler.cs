@@ -8,7 +8,7 @@ namespace Reactor.Systems.Executor.Handlers
 {
     public class EntityReactionSystemHandler : IEntityReactionSystemHandler
     {
-        public IPoolManager PoolManager { get; private set; }
+        public IPoolManager PoolManager { get; }
 
         public EntityReactionSystemHandler(IPoolManager poolManager)
         {

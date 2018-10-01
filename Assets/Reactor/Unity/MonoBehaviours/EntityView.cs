@@ -133,8 +133,7 @@ namespace Reactor.Unity.MonoBehaviours
 
         private void OnDestroy()
         {
-            if (Entity != null)
-                Entity.Pool.RemoveEntity(this.Entity);
+            Entity?.Destory();
             this.gameObject.SetActive(false);
         }
     }

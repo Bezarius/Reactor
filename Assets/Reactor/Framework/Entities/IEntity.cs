@@ -6,11 +6,11 @@ using UniRx;
 
 namespace Reactor.Entities
 {
-    public interface IEntity : IDisposable
+    public interface IEntity :  IDisposable
     {
         int Id { get; }
-        Groups.ISystemReactor Reactor { get; set; }
         IPool Pool { get; }
+        Groups.ISystemReactor Reactor { get; set; }
         IEnumerable<IComponent> Components { get; }
 
         T AddComponent<T>(T component) where T : class, IComponent;
