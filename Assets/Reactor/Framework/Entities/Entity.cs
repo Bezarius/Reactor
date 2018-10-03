@@ -16,7 +16,7 @@ namespace Reactor.Entities
         public ISystemReactor Reactor
         {
             get => _reactor;
-            set => _reactor = (SystemReactor) value;
+            set => _reactor = (SystemReactor)value;
         }
 
         public IEnumerable<IComponent> Components => _components;
@@ -159,7 +159,7 @@ namespace Reactor.Entities
         public T GetComponent<T>() where T : class, IComponent
         {
             var typeId = TypeCache<T>.TypeId;
-            var idx = _reactor._componentIndex.GetTypeIndex(typeId);
+            var idx = _reactor.ComponentIndex.GetTypeIndex(typeId);
             return _components[idx] as T;
         }
 

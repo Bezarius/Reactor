@@ -106,7 +106,6 @@
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/Editor/UnityEditor.Analytics.dll
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.purchasing@2.0.3/Editor/UnityEditor.Purchasing.dll
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll
--r:"C:/Program Files (x86)/Microsoft Visual Studio Tools for Unity/15.0/Editor/SyntaxTree.VisualStudio.Unity.Bridge.dll"
 -r:F:\2018.2.5f1\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\mscorlib.dll
 -r:F:\2018.2.5f1\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\System.dll
 -r:F:\2018.2.5f1\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\System.Core.dll

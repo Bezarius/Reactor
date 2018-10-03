@@ -331,6 +331,9 @@
 -i:F:/Reactor/Assets/Reactor.Examples/ManuallyRegisterSystems/Systems/RandomMovementSystem.cs
 -i:F:/Reactor/Assets/Reactor.Examples/ManualSystems/Application.cs
 -i:F:/Reactor/Assets/Reactor.Examples/ManualSystems/Systems/ConstantOutputSystem.cs
+-i:F:/Reactor/Assets/Reactor.Examples/Performance/Application.cs
+-i:F:/Reactor/Assets/Reactor.Examples/Performance/Components/Component1.cs
+-i:F:/Reactor/Assets/Reactor.Examples/Performance/Systems/SomeSystem.cs
 -i:F:/Reactor/Assets/Reactor.Examples/PluginExample/Application.cs
 -i:F:/Reactor/Assets/Reactor.Examples/PluginExample/HelloWorldPlugin/components/SayHelloWorldComponent.cs
 -i:F:/Reactor/Assets/Reactor.Examples/PluginExample/HelloWorldPlugin/HelloWorldPlugin.cs
@@ -386,7 +389,6 @@
 -i:F:/Reactor/Assets/Reactor/Framework/Entities/TypeCache.cs
 -i:F:/Reactor/Assets/Reactor/Framework/Entities/TypeHelper.cs
 -i:F:/Reactor/Assets/Reactor/Framework/Events/ComponentAddedEvent.cs
--i:F:/Reactor/Assets/Reactor/Framework/Events/ComponentRemovedEvent.cs
 -i:F:/Reactor/Assets/Reactor/Framework/Events/ComponentsAddedEvent.cs
 -i:F:/Reactor/Assets/Reactor/Framework/Events/ComponentsRemovedEvent.cs
 -i:F:/Reactor/Assets/Reactor/Framework/Events/EntityAddedEvent.cs

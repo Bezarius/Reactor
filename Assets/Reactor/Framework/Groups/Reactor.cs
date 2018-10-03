@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Reactor.Components;
 using Reactor.Entities;
 using Reactor.Extensions;
@@ -29,19 +28,19 @@ namespace Reactor.Groups
     {
         private readonly ISystemExecutor _systemExecutor;
         public readonly HashSet<Type> TargetTypesSet;
-        public List<Type> TargetTypesList;
+        public readonly List<Type> TargetTypesList;
 
-        public ISetupSystem[] SetupSystems { get; private set; }
-        public IEntityReactionSystem[] EntityReactionSystems { get; private set; }
-        public IGroupReactionSystem[] GroupReactionSystems { get; private set; }
-        public IInteractReactionSystem[] InteractReactionSystems { get; private set; }
-        public ITeardownSystem[] TeardownSystems { get; private set; }
+        public ISetupSystem[] SetupSystems { get; }
+        public IEntityReactionSystem[] EntityReactionSystems { get; }
+        public IGroupReactionSystem[] GroupReactionSystems { get; }
+        public IInteractReactionSystem[] InteractReactionSystems { get; }
+        public ITeardownSystem[] TeardownSystems { get; }
         public IGroupAccessor[] GroupAccessors { get; private set; }
 
-        public bool HasGroupOrSystems { get; private set; }
+        public bool HasGroupOrSystems { get; }
 
 
-        internal readonly ComponentIndex _componentIndex;
+        internal readonly ComponentIndex ComponentIndex;
         private readonly ConnectionIndex _inConnectionIndex;
         private readonly ConnectionIndex _outConnectionIndex;
 
@@ -52,8 +51,8 @@ namespace Reactor.Groups
             TargetTypesSet = targetTypes;
             TargetTypesList = targetTypes.ToList();
 
-            _componentIndex = new ComponentIndex(targetTypes.ToList());
-            _componentIndex.Build();
+            ComponentIndex = new ComponentIndex(targetTypes.ToList());
+            ComponentIndex.Build();
 
             _inConnectionIndex = new ConnectionIndex(targetTypes.ToList());
             _outConnectionIndex = new ConnectionIndex(targetTypes.ToList());
@@ -82,9 +81,8 @@ namespace Reactor.Groups
 
         public void AddComponent(IEntity entity, IComponent component)
         {
-            ReactorConnection connection;
             var typeId = component.TypeId;
-            if (!_outConnectionIndex.TryGetValue(typeId, out connection))
+            if (!_outConnectionIndex.TryGetValue(typeId, out var connection))
             {
                 var typeList = new List<Type>(TargetTypesSet) { component.Type };
                 SystemReactor nextReactor = _systemExecutor.GetOrCreateConcreteSystemReactor(typeList);
@@ -98,9 +96,8 @@ namespace Reactor.Groups
 
         public void RemoveComponent(IEntity entity, IComponent component)
         {
-            ReactorConnection connection;
             var typeId = component.TypeId;
-            if (!_inConnectionIndex.TryGetValue(typeId, out connection))
+            if (!_inConnectionIndex.TryGetValue(typeId, out var connection))
             {
                 var typeList = new List<Type>(TargetTypesSet);
                 typeList.Remove(component.Type);
@@ -125,9 +122,8 @@ namespace Reactor.Groups
             // check actual connections
             foreach (var type in groupAccessor.AccessorToken.ComponentTypes)
             {
-                ReactorConnection connection;
                 var typeId = TypeHelper.GetTypeId(type);
-                if (_outConnectionIndex.TryGetValue(typeId, out connection) && connection.UpReactor == this)
+                if (_outConnectionIndex.TryGetValue(typeId, out var connection) && connection.UpReactor == this)
                 {
                     connection.AddGroupAccessor(groupAccessor);
                 }
@@ -136,24 +132,23 @@ namespace Reactor.Groups
 
         public int GetComponentIdx(int componentId)
         {
-            return _componentIndex.GetTypeIndex(componentId);
+            return ComponentIndex.GetTypeIndex(componentId);
         }
 
         public bool HasComponentIndex(int componentId)
         {
-            return _componentIndex.HasIndex(componentId);
+            return ComponentIndex.HasIndex(componentId);
         }
 
         public int GetFutureComponentIdx(IComponent component)
         {
             var typeId = component.TypeId;
-            var id = _componentIndex.GetTypeIndex(component.TypeId);
+            var id = ComponentIndex.GetTypeIndex(component.TypeId);
             if (id == -1)
             {
                 // компонент не содержится в текущем реакторе. 
                 // Данная ветка необходима для определение "будущего" идентификатора в следующем реакторе
-                ReactorConnection connection;
-                if (!_outConnectionIndex.TryGetValue(typeId, out connection))
+                if (!_outConnectionIndex.TryGetValue(typeId, out var connection))
                 {
                     var typeList = new List<Type>(TargetTypesSet) { component.Type };
                     SystemReactor nextReactor = _systemExecutor.GetOrCreateConcreteSystemReactor(typeList);

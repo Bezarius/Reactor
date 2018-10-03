@@ -90,13 +90,12 @@
 -r:F:/2018.2.5f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
 -r:F:/2018.2.5f1/Editor/Data/PlaybackEngines/windowsstandalonesupport/UnityEditor.WindowsStandalone.Extensions.dll
 -r:F:/Reactor/Assets/JsonDotNet/Assemblies/Standalone/Newtonsoft.Json.dll
+-r:F:/Reactor/Assets/Plugins/Zenject/Source/Usage/Zenject-usage.dll
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.ads@2.0.8/Editor/UnityEditor.Advertisements.dll
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/UnityEngine.Analytics.dll
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/Editor/UnityEditor.Analytics.dll
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.purchasing@2.0.3/Editor/UnityEditor.Purchasing.dll
 -r:C:/Users/mpavlov/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll
--r:"C:/Program Files (x86)/Microsoft Visual Studio Tools for Unity/15.0/Editor/SyntaxTree.VisualStudio.Unity.Bridge.dll"
--r:F:/Reactor/Assets/Plugins/Zenject/Source/Usage/Zenject-usage.dll
 -r:F:\2018.2.5f1\Editor\Data\NetStandard\ref\2.0.0\netstandard.dll
 -r:F:\2018.2.5f1\Editor\Data\NetStandard\compat\2.0.0\shims\netstandard\Microsoft.Win32.Primitives.dll
 -r:F:\2018.2.5f1\Editor\Data\NetStandard\compat\2.0.0\shims\netstandard\System.AppContext.dll

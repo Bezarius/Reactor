@@ -16,10 +16,10 @@ namespace Reactor.Pools
         private readonly IDictionary<GroupAccessorToken, IGroupAccessor> _groupAccessors;
         private readonly IDictionary<string, IPool> _pools;
 
-        public IEventSystem EventSystem { get; private set; }
-        public IEnumerable<IPool> Pools { get { return _pools.Values; } }
-        public IPoolFactory PoolFactory { get; private set; }
-        public IGroupAccessorFactory GroupAccessorFactory { get; private set; }
+        public IEventSystem EventSystem { get; }
+        public IEnumerable<IPool> Pools => _pools.Values;
+        public IPoolFactory PoolFactory { get; }
+        public IGroupAccessorFactory GroupAccessorFactory { get; }
 
         public PoolManager(IEventSystem eventSystem, IPoolFactory poolFactory, IGroupAccessorFactory groupAccessorFactory)
         {
